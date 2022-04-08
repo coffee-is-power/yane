@@ -1,0 +1,6 @@
+
+vscode:
+  extensions:
+    - rust-lang.rust
+    - bungcip.better-toml
+    - serayuzgur.crates

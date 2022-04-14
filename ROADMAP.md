@@ -1,0 +1,68 @@
+# ROADMAP
+
+ - CPU :sunny::cloud::construction_worker_man::construction::construction::construction::construction::construction::construction:
+   - Bus :ballot_box_with_check:
+   - Instructions:
+     - ADC: add with carry :ballot_box_with_check:
+     - AND: and (with accumulator) :ballot_box_with_check:
+     - ASL: arithmetic shift left
+     - BCC: branch on carry clear
+     - BCS: branch on carry set
+     - BEQ: branch on equal (zero set)
+     - BIT: bit test
+     - BMI: branch on minus (negative set)
+     - BNE: branch on not equal (zero clear)
+     - BPL: branch on plus (negative clear)
+     - BRK: break / interrupt
+     - BVC: branch on overflow clear
+     - BVS: branch on overflow set
+     - CLC: clear carry
+     - CLD: clear decimal
+     - CLI: clear interrupt disable
+     - CLV: clear overflow
+     - CMP: compare (with accumulator)
+     - CPX: compare with X
+     - CPY: compare with Y
+     - DEC: decrement
+     - DEX: decrement X
+     - DEY: decrement Y
+     - EOR: exclusive or (with accumulator)
+     - INC: increment
+     - INX: increment X
+     - INY: increment Y
+     - JMP: jump
+     - JSR: jump subroutine
+     - LDA: load accumulator :ballot_box_with_check:
+     - LDX: load X :ballot_box_with_check:
+     - LDY: load Y :ballot_box_with_check:
+     - LSR: logical shift right
+     - NOP: no operation
+     - ORA: or with accumulator :ballot_box_with_check:
+     - PHA: push accumulator
+     - PHP: push processor status (SR)
+     - PLA: pull accumulator
+     - PLP: pull processor status (SR)
+     - ROL: rotate left
+     - ROR: rotate right
+     - RTI: return from interrupt
+     - RTS: return from subroutine
+     - SBC: subtract with carry
+     - SEC: set carry
+     - SED: set decimal
+     - SEI: set interrupt disable
+     - STA: store accumulator
+     - STX: store X
+     - STY: store Y
+     - TAX: transfer accumulator to X
+     - TAY: transfer accumulator to Y
+     - TSX: transfer stack pointer to X
+     - TXA: transfer X to accumulator
+     - TXS: transfer X to stack pointer
+     - TYA: transfer Y to accumulator
+ - Mappers :x:
+ - PPU (Picture Processing Unit) :x:
+ - APU (Audio Processing Unit) :x:
+ - Controllers :x:
+ - Add some tools for bit brushing/hackery :x:
+ - Add support for .fm(2|3)
+

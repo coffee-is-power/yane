@@ -64,5 +64,5 @@
  - APU (Audio Processing Unit) :x:
  - Controllers :x:
  - Add some tools for bit brushing/hackery :x:
- - Add support for .fm(2|3)
+ - Add support for .fm(2|3) :x:
 

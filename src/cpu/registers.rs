@@ -47,36 +47,7 @@ impl Registers {
             self.flags &= !0b10;
         }
     }
-    pub fn get_break_flag(&self) -> bool {
-        if ((self.flags & 0b1000) >> 3) == 1 {
-            true
-        } else {
-            false
-        }
-    }
 
-    pub fn set_break_flag(&mut self, bit: bool) {
-        if bit {
-            self.flags |= 0b1000;
-        } else {
-            self.flags &= !0b1000;
-        }
-    }
-    pub fn get_decimal_flag(&self) -> bool {
-        if ((self.flags & 0b10000) >> 4) == 1 {
-            true
-        } else {
-            false
-        }
-    }
-
-    pub fn set_decimal_flag(&mut self, bit: bool) {
-        if bit {
-            self.flags |= 0b10000;
-        } else {
-            self.flags &= !0b10000;
-        }
-    }
     pub fn get_interrupt_disable_flag(&self) -> bool {
         if ((self.flags & 0b100000) >> 5) == 1 {
             true

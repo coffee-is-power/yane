@@ -16,6 +16,7 @@ fn sleep_cycles(cycles: u32) {
 #[cfg(test)]
 #[allow(dead_code)]
 fn sleep_cycles(_cycles: u32) {}
+#[derive(Debug)]
 pub enum AddressingMode {
     Immediate,
     ZeroPage,
@@ -26,7 +27,7 @@ pub enum AddressingMode {
     AbsoluteY,
     IndirectX,
     IndirectY,
-    // NoneAddressing,
+    NoneAddressing,
 }
 
 #[derive(Debug)]
@@ -112,9 +113,10 @@ impl CPU {
                 let deref_base = (hi as u16) << 8 | (lo as u16);
                 let deref = deref_base.wrapping_add(self.registers.y as u16);
                 deref
-            } /*AddressingMode::NoneAddressing => {
-                  panic!("mode {:?} is not supported", mode);
-              }*/
+            }
+            AddressingMode::NoneAddressing => {
+                panic!("mode {:?} is not supported", mode);
+            }
         }
     }
     pub fn write(&mut self, address: u16, data: u8) {
@@ -319,6 +321,50 @@ impl CPU {
                 self.and(AddressingMode::IndirectY);
                 sleep_cycles(5);
             }
+            // LSR
+            0x4A => {
+                self.lsr(AddressingMode::NoneAddressing);
+                sleep_cycles(2);
+            }
+            0x46 => {
+                self.lsr(AddressingMode::ZeroPage);
+                sleep_cycles(5);
+            }
+
+            0x56 => {
+                self.lsr(AddressingMode::ZeroPageX);
+                sleep_cycles(6);
+            }
+            0x4E => {
+                self.lsr(AddressingMode::Absolute);
+                sleep_cycles(6);
+            }
+            0x5E => {
+                self.lsr(AddressingMode::AbsoluteX);
+                sleep_cycles(7);
+            }
+            // ASL
+            0x0A => {
+                self.asl(AddressingMode::NoneAddressing);
+                sleep_cycles(2);
+            }
+            0x06 => {
+                self.asl(AddressingMode::ZeroPage);
+                sleep_cycles(5);
+            }
+
+            0x16 => {
+                self.asl(AddressingMode::ZeroPageX);
+                sleep_cycles(6);
+            }
+            0x0E => {
+                self.asl(AddressingMode::Absolute);
+                sleep_cycles(6);
+            }
+            0x1E => {
+                self.asl(AddressingMode::AbsoluteX);
+                sleep_cycles(7);
+            }
             _ => unimplemented!("{:#02x} opcode is not implemented or illegal!", instruction),
         }
     }
@@ -367,6 +413,41 @@ impl CPU {
         let addr = self.get_operand_address(mode);
         let value = self.read(addr);
         self.registers.a &= value;
+    }
+
+    fn lsr(&mut self, mode: AddressingMode) {
+        match mode {
+            AddressingMode::NoneAddressing => {
+                let value = self.registers.a;
+                self.registers.set_carry_flag((value & 1) == 1);
+                self.registers.set_negative_flag(value >= 0x80);
+                self.registers.set_zero_flag(value == 1); // The only way for the result to be 0 is if the value is 1
+                self.registers.a >>= 1;
+            }
+            _ => {
+                let addr = self.get_operand_address(mode);
+                let value = self.read(addr);
+                self.write(addr, value >> 1);
+                self.registers.set_carry_flag((value & 1) == 1);
+                self.registers.set_negative_flag(value >= 0x80);
+                self.registers.set_zero_flag(value == 1); // The only way for the result to be 0 is if the value is 1
+            }
+        }
+    }
+
+    fn asl(&mut self, mode: AddressingMode) {
+        match mode {
+            AddressingMode::NoneAddressing => {
+                self.registers.set_carry_flag(self.registers.a >= 0x80);
+                self.registers.a <<= 1;
+            }
+            _ => {
+                let addr = self.get_operand_address(mode);
+                let value = self.read(addr);
+                self.write(addr, value << 1);
+                self.registers.set_carry_flag(value >= 0x80);
+            }
+        }
     }
     pub fn init(&mut self) {
         let low_byte = self.read(0xFFFC);

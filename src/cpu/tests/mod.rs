@@ -1,8 +1,10 @@
 mod adc_instruction;
 mod and_instruction;
+mod asl_instruction;
 mod lda_instruction;
 mod ldx_instruction;
 mod ldy_instruction;
+mod lsr_instruction;
 mod ora_instruction;
 
 use crate::CPU;

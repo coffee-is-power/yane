@@ -17,7 +17,7 @@
      - BVC: branch on overflow clear
      - BVS: branch on overflow set
      - CLC: clear carry
-     - CLD: clear decimal
+     - CLD: clear decimal: Won't implement, because NES didnt support decimal mode
      - CLI: clear interrupt disable
      - CLV: clear overflow
      - CMP: compare (with accumulator)

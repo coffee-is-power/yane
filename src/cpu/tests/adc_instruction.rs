@@ -183,8 +183,8 @@ fn carry_is_on_when_overflows() {
     cpu.exec();
 
     assert_eq!(cpu.registers.a, 1);
-    assert_eq!(cpu.registers.get_carry_flag(), true);
-    assert_eq!(cpu.registers.get_overflow_flag(), true);
+    assert_eq!(cpu.registers.carry, true);
+    assert_eq!(cpu.registers.overflow, true);
 }
 #[test]
 fn adds_carry_to_sum() {
@@ -197,11 +197,11 @@ fn adds_carry_to_sum() {
     rom[2] = 0x69;
     rom[3] = 2;
     let mut cpu = CPU::with_rom(rom);
-    cpu.registers.set_carry_flag(true);
+    cpu.registers.carry = true;
     cpu.init();
     cpu.exec();
     cpu.exec();
 
     assert_eq!(cpu.registers.a, 0xf3);
-    assert_eq!(cpu.registers.get_carry_flag(), false);
+    assert_eq!(cpu.registers.carry, false);
 }

@@ -12,9 +12,9 @@ fn accumulator() {
     cpu.init();
     cpu.exec();
     assert_eq!(cpu.registers.a, 3 >> 1);
-    assert_eq!(cpu.registers.get_negative_flag(), false);
-    assert_eq!(cpu.registers.get_zero_flag(), false);
-    assert_eq!(cpu.registers.get_carry_flag(), true);
+    assert_eq!(cpu.registers.negative, false);
+    assert_eq!(cpu.registers.zero, false);
+    assert_eq!(cpu.registers.carry, true);
 }
 
 #[test]
@@ -30,9 +30,9 @@ fn zeropage() {
     cpu.init();
     cpu.exec();
     assert_eq!(cpu.memory.ram[0], 3 >> 1);
-    assert_eq!(cpu.registers.get_negative_flag(), false);
-    assert_eq!(cpu.registers.get_zero_flag(), false);
-    assert_eq!(cpu.registers.get_carry_flag(), true);
+    assert_eq!(cpu.registers.negative, false);
+    assert_eq!(cpu.registers.zero, false);
+    assert_eq!(cpu.registers.carry, true);
 }
 
 #[test]
@@ -49,9 +49,9 @@ fn zeropage_x() {
     cpu.init();
     cpu.exec();
     assert_eq!(cpu.memory.ram[1], 3 >> 1);
-    assert_eq!(cpu.registers.get_negative_flag(), false);
-    assert_eq!(cpu.registers.get_zero_flag(), false);
-    assert_eq!(cpu.registers.get_carry_flag(), true);
+    assert_eq!(cpu.registers.negative, false);
+    assert_eq!(cpu.registers.zero, false);
+    assert_eq!(cpu.registers.carry, true);
 }
 
 #[test]
@@ -68,9 +68,9 @@ fn abs() {
     cpu.init();
     cpu.exec();
     assert_eq!(cpu.memory.ram[0x1011], 3 >> 1);
-    assert_eq!(cpu.registers.get_negative_flag(), false);
-    assert_eq!(cpu.registers.get_zero_flag(), false);
-    assert_eq!(cpu.registers.get_carry_flag(), true);
+    assert_eq!(cpu.registers.negative, false);
+    assert_eq!(cpu.registers.zero, false);
+    assert_eq!(cpu.registers.carry, true);
 }
 
 #[test]
@@ -88,7 +88,7 @@ fn abs_x() {
     cpu.init();
     cpu.exec();
     assert_eq!(cpu.memory.ram[0x1012], 3 >> 1);
-    assert_eq!(cpu.registers.get_negative_flag(), false);
-    assert_eq!(cpu.registers.get_zero_flag(), false);
-    assert_eq!(cpu.registers.get_carry_flag(), true);
+    assert_eq!(cpu.registers.negative, false);
+    assert_eq!(cpu.registers.zero, false);
+    assert_eq!(cpu.registers.carry, true);
 }

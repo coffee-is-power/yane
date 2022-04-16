@@ -365,6 +365,48 @@ impl CPU {
                 self.asl(AddressingMode::AbsoluteX);
                 sleep_cycles(7);
             }
+            // BCC
+            0x90 => {
+                self.bcc();
+                sleep_cycles(2);
+            }
+
+            // BCS
+            0xB0 => {
+                self.bcs();
+                sleep_cycles(2);
+            }
+            // BVC
+            0x50 => {
+                self.bvc();
+                sleep_cycles(2);
+            }
+            // BVS
+            0x70 => {
+                self.bvs();
+                sleep_cycles(2);
+            }
+            // BEQ
+            0xF0 => {
+                self.beq();
+                sleep_cycles(2);
+            }
+            // BNE
+            0xD0 => {
+                self.bne();
+                sleep_cycles(2);
+            }
+            // BPL
+            0x10 => {
+                self.bpl();
+                sleep_cycles(2);
+            }
+            // BMI
+            0x30 => {
+                self.bmi();
+                sleep_cycles(2);
+            }
+
             _ => unimplemented!("{:#02x} opcode is not implemented or illegal!", instruction),
         }
     }
@@ -388,19 +430,15 @@ impl CPU {
     fn adc(&mut self, mode: AddressingMode) {
         let addr = self.get_operand_address(mode);
         let value = self.read(addr);
-        let (result, carry) = self.registers.a.overflowing_add(
-            value
-                + if self.registers.get_carry_flag() {
-                    1
-                } else {
-                    0
-                },
-        );
+        let (result, carry) = self
+            .registers
+            .a
+            .overflowing_add(value + if self.registers.carry { 1 } else { 0 });
         self.registers.a = result;
-        self.registers.set_carry_flag(carry);
-        self.registers.set_zero_flag(result == 0);
-        self.registers.set_overflow_flag(carry);
-        self.registers.set_negative_flag(result >= 0x80);
+        self.registers.carry = carry;
+        self.registers.zero = result == 0;
+        self.registers.overflow = carry;
+        self.registers.negative = result >= 0x80;
     }
 
     fn ora(&mut self, mode: AddressingMode) {
@@ -419,18 +457,19 @@ impl CPU {
         match mode {
             AddressingMode::NoneAddressing => {
                 let value = self.registers.a;
-                self.registers.set_carry_flag((value & 1) == 1);
-                self.registers.set_negative_flag(value >= 0x80);
-                self.registers.set_zero_flag(value == 1); // The only way for the result to be 0 is if the value is 1
+
+                self.registers.carry = (value & 1) == 1;
+                self.registers.negative = value >= 0x80;
+                self.registers.zero = value == 1;
                 self.registers.a >>= 1;
             }
             _ => {
                 let addr = self.get_operand_address(mode);
                 let value = self.read(addr);
                 self.write(addr, value >> 1);
-                self.registers.set_carry_flag((value & 1) == 1);
-                self.registers.set_negative_flag(value >= 0x80);
-                self.registers.set_zero_flag(value == 1); // The only way for the result to be 0 is if the value is 1
+                self.registers.carry = (value & 1) == 1;
+                self.registers.negative = value >= 0x80;
+                self.registers.zero = value == 1;
             }
         }
     }
@@ -438,15 +477,147 @@ impl CPU {
     fn asl(&mut self, mode: AddressingMode) {
         match mode {
             AddressingMode::NoneAddressing => {
-                self.registers.set_carry_flag(self.registers.a >= 0x80);
+                self.registers.carry = self.registers.a >= 0x80;
                 self.registers.a <<= 1;
             }
             _ => {
                 let addr = self.get_operand_address(mode);
                 let value = self.read(addr);
                 self.write(addr, value << 1);
-                self.registers.set_carry_flag(value >= 0x80);
+                self.registers.carry = value >= 0x80;
             }
+        }
+    }
+    fn bcc(&mut self) {
+        if !self.registers.carry {
+            let value = self.read(self.registers.program_counter);
+
+            let old_pc = self.registers.program_counter - 1;
+            if value > 0x7F {
+                self.registers.program_counter -= (!value + 1) as u16;
+            } else {
+                self.registers.program_counter += value as u16;
+            }
+            println!(
+                "Jumped from {} to {}",
+                old_pc,
+                self.registers.program_counter + 1
+            );
+        }
+    }
+
+    fn bcs(&mut self) {
+        if self.registers.carry {
+            let value = self.read(self.registers.program_counter);
+
+            let old_pc = self.registers.program_counter - 1;
+            if value > 0x7F {
+                self.registers.program_counter -= (!value + 1) as u16;
+            } else {
+                self.registers.program_counter += value as u16;
+            }
+            println!(
+                "Jumped from {} to {}",
+                old_pc, self.registers.program_counter
+            );
+        }
+    }
+    fn bvc(&mut self) {
+        if !self.registers.overflow {
+            let value = self.read(self.registers.program_counter);
+
+            let old_pc = self.registers.program_counter - 1;
+            if value > 0x7F {
+                self.registers.program_counter -= (!value + 1) as u16;
+            } else {
+                self.registers.program_counter += value as u16;
+            }
+            println!(
+                "Jumped from {} to {}",
+                old_pc, self.registers.program_counter
+            );
+        }
+    }
+    fn bvs(&mut self) {
+        if self.registers.overflow {
+            let value = self.read(self.registers.program_counter);
+
+            let old_pc = self.registers.program_counter - 1;
+            if value > 0x7F {
+                self.registers.program_counter -= (!value + 1) as u16;
+            } else {
+                self.registers.program_counter += value as u16;
+            }
+            println!(
+                "Jumped from {} to {}",
+                old_pc, self.registers.program_counter
+            );
+        }
+    }
+
+    fn beq(&mut self) {
+        if self.registers.zero {
+            let value = self.read(self.registers.program_counter);
+
+            let old_pc = self.registers.program_counter - 1;
+            if value > 0x7F {
+                self.registers.program_counter -= (!value + 1) as u16;
+            } else {
+                self.registers.program_counter += value as u16;
+            }
+            println!(
+                "Jumped from {} to {}",
+                old_pc, self.registers.program_counter
+            );
+        }
+    }
+
+    fn bne(&mut self) {
+        if !self.registers.zero {
+            let value = self.read(self.registers.program_counter);
+
+            let old_pc = self.registers.program_counter - 1;
+            if value > 0x7F {
+                self.registers.program_counter -= (!value + 1) as u16;
+            } else {
+                self.registers.program_counter += value as u16;
+            }
+            println!(
+                "Jumped from {} to {}",
+                old_pc, self.registers.program_counter
+            );
+        }
+    }
+    fn bmi(&mut self) {
+        if self.registers.negative {
+            let value = self.read(self.registers.program_counter);
+
+            let old_pc = self.registers.program_counter - 1;
+            if value > 0x7F {
+                self.registers.program_counter -= (!value + 1) as u16;
+            } else {
+                self.registers.program_counter += value as u16;
+            }
+            println!(
+                "Jumped from {} to {}",
+                old_pc, self.registers.program_counter
+            );
+        }
+    }
+    fn bpl(&mut self) {
+        if !self.registers.negative {
+            let value = self.read(self.registers.program_counter);
+
+            let old_pc = self.registers.program_counter - 1;
+            if value > 0x7F {
+                self.registers.program_counter -= (!value + 1) as u16;
+            } else {
+                self.registers.program_counter += value as u16;
+            }
+            println!(
+                "Jumped from {} to {}",
+                old_pc, self.registers.program_counter
+            );
         }
     }
     pub fn init(&mut self) {

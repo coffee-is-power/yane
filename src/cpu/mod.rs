@@ -620,6 +620,25 @@ impl CPU {
             );
         }
     }
+
+    /**
+       Pushes a value onto the stack
+    */
+    pub fn push(&mut self, value: u8) {
+        self.registers.stack_pointer = self.registers.stack_pointer.wrapping_sub(1);
+        self.write(self.registers.stack_pointer as u16 + 0x100, value);
+    }
+
+    /**
+       Pops the value on top of the stack
+    */
+    pub fn pop(&mut self) -> u8 {
+        let old_sp = self.registers.stack_pointer;
+        self.registers.stack_pointer = old_sp.wrapping_add(1);
+        let value = self.read(old_sp as u16 + 0x100);
+        self.write(old_sp as u16 + 0x100, 0);
+        return value;
+    }
     pub fn init(&mut self) {
         let low_byte = self.read(0xFFFC);
         let high_byte = self.read(0xFFFD);

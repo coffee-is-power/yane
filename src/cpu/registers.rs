@@ -22,7 +22,10 @@ impl Registers {
             interrupt_disable: true,
             zero: false,
             carry: false,
-            stack_pointer: 0xFD,
+            // The original hardware doesn't really initialize this register, but i'm gonna set to 0xFF
+            // The software will change this on runtime
+            // So it doesnt really matter
+            stack_pointer: 0xFF,
             program_counter: 0xFFFC,
         }
     }

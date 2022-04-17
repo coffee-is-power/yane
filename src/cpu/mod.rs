@@ -406,7 +406,16 @@ impl CPU {
                 self.bmi();
                 sleep_cycles(2);
             }
-
+            // CLI
+            0x58 => {
+                self.cli();
+                sleep_cycles(2);
+            }
+            // SEI
+            0x78 => {
+                self.sei();
+                sleep_cycles(2);
+            }
             _ => unimplemented!("{:#02x} opcode is not implemented or illegal!", instruction),
         }
     }
@@ -440,7 +449,12 @@ impl CPU {
         self.registers.overflow = carry;
         self.registers.negative = result >= 0x80;
     }
-
+    fn sei(&mut self) {
+        self.registers.interrupt_disable = true;
+    }
+    fn cli(&mut self) {
+        self.registers.interrupt_disable = false;
+    }
     fn ora(&mut self, mode: AddressingMode) {
         let addr = self.get_operand_address(mode);
         let value = self.read(addr);

@@ -3,6 +3,7 @@ mod branching_instructions;
 mod load_instructions;
 mod math_operations;
 mod stack;
+mod interrupts;
 
 use crate::CPU;
 

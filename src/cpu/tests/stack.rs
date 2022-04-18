@@ -6,11 +6,11 @@ fn push() {
     let mut cpu = CPU::new();
     cpu.push(10);
     assert_eq!(
-        cpu.registers.stack_pointer, 0xFE,
+        cpu.registers.stack_pointer, 0x23,
         "The sp must be decremented"
     );
     assert_eq!(
-        cpu.read(0x1FE),
+        cpu.read(0x123),
         10,
         "The pushed value should be written to memory"
     );
@@ -23,11 +23,11 @@ fn pop() {
 
     let value = cpu.pop();
     assert_eq!(
-        cpu.registers.stack_pointer, 0xFF,
+        cpu.registers.stack_pointer, 0x24,
         "The sp must be incremented"
     );
     assert_eq!(
-        cpu.read(0xFE),
+        cpu.read(0x123),
         0,
         "The popped value should be deleted from memory"
     );

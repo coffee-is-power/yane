@@ -416,8 +416,29 @@ impl CPU {
                 self.sei();
                 sleep_cycles(2);
             }
+            // JSR
+            0x20 => {
+                self.jsr();
+                sleep_cycles(6);
+            }
+            // RTS
+            0x60 => {
+                self.rts();
+                sleep_cycles(6);
+            }
             _ => unimplemented!("{:#02x} opcode is not implemented or illegal!", instruction),
         }
+    }
+    fn jsr(&mut self) {
+        self.push(((self.registers.program_counter & 0xFF00) >> 8) as u8);
+        self.push((self.registers.program_counter + 2) as u8);
+        self.registers.program_counter = self.get_operand_address(AddressingMode::Absolute);
+    }
+    fn rts(&mut self) {
+        let lo = self.pop() as u16;
+        let hi = self.pop() as u16;
+        let addr = (hi << 8) | lo;
+        self.registers.program_counter = addr;
     }
     fn lda(&mut self, mode: AddressingMode) {
         let addr = self.get_operand_address(mode);
@@ -651,7 +672,7 @@ impl CPU {
         self.registers.stack_pointer = old_sp.wrapping_add(1);
         let value = self.read(old_sp as u16 + 0x100);
         self.write(old_sp as u16 + 0x100, 0);
-        return value;
+        value
     }
     pub fn init(&mut self) {
         let low_byte = self.read(0xFFFC);

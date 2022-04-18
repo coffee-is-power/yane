@@ -1,9 +1,10 @@
 mod bitwise_instructions;
 mod branching_instructions;
+mod interrupts;
 mod load_instructions;
 mod math_operations;
 mod stack;
-mod interrupts;
+mod subroutines;
 
 use crate::CPU;
 

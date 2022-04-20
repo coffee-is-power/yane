@@ -462,7 +462,7 @@ impl CPU {
                 sleep_cycles(3);
             }
             // TXS
-            0x8A => {
+            0x9A => {
                 self.txs();
                 sleep_cycles(2);
             }
@@ -481,8 +481,48 @@ impl CPU {
                 self.bit(AddressingMode::Absolute);
                 sleep_cycles(4);
             }
+            // TAX
+            0xAA => {
+                self.tax();
+                sleep_cycles(2);
+            }
+            // TXA
+            0x8A => {
+                self.txa();
+                sleep_cycles(2);
+            }
+            // TAY
+            0xA8 => {
+                self.tay();
+                sleep_cycles(2);
+            }
+            // TYA
+            0x98 => {
+                self.tya();
+                sleep_cycles(2);
+            }
             _ => unimplemented!("{:#02x} opcode is not implemented or illegal!", instruction),
         }
+    }
+    fn bit(&mut self, mode: AddressingMode) {
+        let addr = self.get_operand_address(mode);
+        let value = self.read(addr);
+        let result = self.registers.a & value;
+        self.registers.zero = result == 0;
+        self.registers.negative = (value & 0b10000000u8) != 0;
+        self.registers.overflow = (value & 0b01000000u8) != 0;
+    }
+    fn tax(&mut self) {
+        self.registers.x = self.registers.a;
+    }
+    fn txa(&mut self) {
+        self.registers.a = self.registers.x;
+    }
+    fn tay(&mut self) {
+        self.registers.y = self.registers.a;
+    }
+    fn tya(&mut self) {
+        self.registers.a = self.registers.y;
     }
     // X -> sp
     fn txs(&mut self) {

@@ -12,10 +12,10 @@ fn jsr() {
     let mut cpu = CPU::with_rom(rom);
     cpu.init();
     cpu.exec();
-    assert_eq!(cpu.registers.stack_pointer, 0x26);
+    assert_eq!(cpu.registers.stack_pointer, 0x22);
 
-    let hi = cpu.read(0x125) as u16;
-    let lo = cpu.read(0x126) as u16;
+    let hi = cpu.read(0x123) as u16;
+    let lo = cpu.read(0x122) as u16;
     let addr = (hi << 8) | lo;
     assert_eq!(addr, 0x8003);
     assert_eq!(cpu.registers.program_counter, 0x8050);

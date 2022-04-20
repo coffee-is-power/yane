@@ -5,7 +5,7 @@ mod load_instructions;
 mod math_operations;
 mod stack;
 mod subroutines;
-
+mod clear_and_set;
 use crate::CPU;
 
 #[test]

@@ -426,8 +426,32 @@ impl CPU {
                 self.rts();
                 sleep_cycles(6);
             }
+            // CLC
+            0x18 => {
+                self.clc();
+                sleep_cycles(2);
+            }
+            // SEC
+            0x38 => {
+                self.sec();
+                sleep_cycles(2);
+            }
+            // CLV
+            0xB8 => {
+                self.clv();
+                sleep_cycles(2);
+            }
             _ => unimplemented!("{:#02x} opcode is not implemented or illegal!", instruction),
         }
+    }
+    fn clc(&mut self){
+        self.registers.carry = false;
+    }
+    fn sec(&mut self){
+        self.registers.carry = true;
+    }
+    fn clv(&mut self){
+        self.registers.overflow = false;
     }
     fn jsr(&mut self) {
         self.push(((self.registers.program_counter & 0xFF00) >> 8) as u8);

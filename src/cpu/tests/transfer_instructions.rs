@@ -9,10 +9,10 @@ fn tax() {
     rom[0] = 0xAA;
     let mut cpu = CPU::with_rom(rom);
     cpu.init();
-    cpu.registers.x = 10;
+    cpu.registers.a = 10;
     cpu.exec();
-    assert_eq!(cpu.registers.x, 10);
     assert_eq!(cpu.registers.a, 10);
+    assert_eq!(cpu.registers.x, 10);
 }
 #[test]
 fn txa() {
@@ -23,10 +23,10 @@ fn txa() {
     rom[0] = 0x8A;
     let mut cpu = CPU::with_rom(rom);
     cpu.init();
-    cpu.registers.a = 10;
+    cpu.registers.x = 10;
     cpu.exec();
-    assert_eq!(cpu.registers.x, 10);
     assert_eq!(cpu.registers.a, 10);
+    assert_eq!(cpu.registers.x, 10);
 }
 
 #[test]

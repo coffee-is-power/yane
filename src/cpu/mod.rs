@@ -441,16 +441,67 @@ impl CPU {
                 self.clv();
                 sleep_cycles(2);
             }
+            // PHA
+            0x48 => {
+                self.pha();
+                sleep_cycles(3);
+            }
+            // PLA
+            0x68 => {
+                self.pla();
+                sleep_cycles(4);
+            }
+            // PHP
+            0x08 => {
+                self.php();
+                sleep_cycles(3);
+            }
+            // PLP
+            0x28 => {
+                self.plp();
+                sleep_cycles(3);
+            }
+            // TXS
+            0x8A => {
+                self.txs();
+                sleep_cycles(2);
+            }
+            // TSX
+            0xBA => {
+                self.tsx();
+                sleep_cycles(2);
+            }
             _ => unimplemented!("{:#02x} opcode is not implemented or illegal!", instruction),
         }
     }
-    fn clc(&mut self){
+    // X -> sp
+    fn txs(&mut self) {
+        self.registers.stack_pointer = self.registers.x;
+    }
+    // sp -> X
+    fn tsx(&mut self) {
+        self.registers.x = self.registers.stack_pointer;
+    }
+    fn php(&mut self) {
+        self.push(self.registers.get_flags());
+    }
+    fn plp(&mut self) {
+        let ps = self.pop();
+        self.registers.set_flags_from_byte(ps);
+    }
+    fn pha(&mut self) {
+        self.push(self.registers.a);
+    }
+    fn pla(&mut self) {
+        self.registers.a = self.pop();
+    }
+    fn clc(&mut self) {
         self.registers.carry = false;
     }
-    fn sec(&mut self){
+    fn sec(&mut self) {
         self.registers.carry = true;
     }
-    fn clv(&mut self){
+    fn clv(&mut self) {
         self.registers.overflow = false;
     }
     fn jsr(&mut self) {

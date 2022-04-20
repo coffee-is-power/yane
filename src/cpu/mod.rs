@@ -471,6 +471,16 @@ impl CPU {
                 self.tsx();
                 sleep_cycles(2);
             }
+            // BIT zp
+            0x24 => {
+                self.bit(AddressingMode::ZeroPage);
+                sleep_cycles(3);
+            }
+            // BIT abs
+            0x2C => {
+                self.bit(AddressingMode::Absolute);
+                sleep_cycles(4);
+            }
             _ => unimplemented!("{:#02x} opcode is not implemented or illegal!", instruction),
         }
     }

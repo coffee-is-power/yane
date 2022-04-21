@@ -2,8 +2,10 @@ pub mod registers;
 #[cfg(test)]
 mod tests;
 
+use crate::cartridge::Cartridge;
 use crate::memory::Memory;
 use registers::Registers;
+
 #[allow(dead_code)]
 const CPU_CLOCK_DELAY: f64 = 5.58730074e-7;
 #[cfg(not(test))]
@@ -37,19 +39,13 @@ pub struct CPU {
     pub memory: Memory,
 }
 impl CPU {
-    pub fn new() -> Self {
+    pub fn new(cartridge: &mut Cartridge) -> Self {
         Self {
             registers: Registers::new(),
-            memory: Memory::new([0u8; 0x7fff]),
+            memory: Memory::new(cartridge),
         }
     }
 
-    pub fn with_rom(rom: [u8; 0x7fff]) -> Self {
-        Self {
-            registers: Registers::new(),
-            memory: Memory::new(rom),
-        }
-    }
     fn read_u16(&self, addr: u16) -> u16 {
         self.read(addr) as u16 | ((self.read(addr + 1) as u16) << 8)
     }
@@ -126,11 +122,12 @@ impl CPU {
     }
     pub fn write(&mut self, address: u16, data: u8) {
         println!("Write:\n  Address: {},\n  Data: {}", address, data);
-        self.memory.write(address, data);
+        self.memory.cpu_write(address, data);
     }
     pub fn read(&self, address: u16) -> u8 {
-        println!("Read Address {}", address);
-        self.memory.read(address)
+        let r = self.memory.cpu_read(address);
+        println!("Read Address {:#02x}: {:#02x}", address, r);
+        r
     }
     /** Executes the next instruction in the program counter */
     pub fn exec(&mut self) {
@@ -846,7 +843,14 @@ impl CPU {
                 self.ror(AddressingMode::AbsoluteX);
                 sleep_cycles(7);
             }
-            _ => unimplemented!("{:#02x} opcode is not implemented or illegal!", instruction),
+            // RTI
+            0x40 => {
+                self.rti();
+                sleep_cycles(6);
+            }
+            _ => {
+                eprintln!("{:#02x} opcode is not implemented or illegal!", instruction)
+            }
         }
     }
 

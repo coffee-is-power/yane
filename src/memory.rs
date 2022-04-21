@@ -1,34 +1,39 @@
+use crate::cartridge::Cartridge;
 #[derive(Debug)]
 pub struct Memory {
     pub ram: [u8; 0x2000],
-    pub rom: [u8; 0x7fff],
+    cartridge: *mut Cartridge,
 }
 impl Memory {
-    pub fn new(rom: [u8; 0x7fff]) -> Self {
+    pub fn new(cartridge: &mut Cartridge) -> Self {
         Self {
             ram: [0; 0x2000],
-            rom,
+            cartridge,
         }
     }
-
-    pub fn write(&mut self, address: u16, data: u8) {
+    pub fn mut_cartridge(&mut self) -> &mut Cartridge {
+        unsafe { &mut *self.cartridge }
+    }
+    pub fn cartridge(&self) -> &Cartridge {
+        unsafe { &*self.cartridge }
+    }
+    pub fn cpu_write(&mut self, address: u16, data: u8) {
         if address < 0x2000 {
             self.ram[address as usize] = data;
         } else if address & 0b1000000000000000 == 0x8000 {
-            eprintln!("ERROR: Writing to ROM!");
-            return;
+            self.mut_cartridge().cpu_write(address, data);
         } else {
             eprintln!("ERROR: Unmapped memory!");
         }
     }
-    pub fn read(&self, address: u16) -> u8 {
+    pub fn cpu_read(&self, address: u16) -> u8 {
         return if address < 0x2000 {
             self.ram[address as usize]
         } else if address & 0b1000000000000000 == 0x8000 {
-            self.rom[(address & 0b0111111111111111) as usize]
+            self.cartridge().cpu_read(address)
         } else {
             eprintln!("ERROR: Reading Unmapped memory!");
-            0xFF
+            0x00
         };
     }
 }

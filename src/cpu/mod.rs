@@ -795,10 +795,93 @@ impl CPU {
                 self.iny();
                 sleep_cycles(2);
             }
+            // ROL A
+            0x2A => {
+                self.rol(AddressingMode::NoneAddressing);
+                sleep_cycles(2);
+            }
+            // ROL ZP
+            0x26 => {
+                self.rol(AddressingMode::ZeroPage);
+                sleep_cycles(5);
+            }
+            // ROL ZP X
+            0x36 => {
+                self.rol(AddressingMode::ZeroPageX);
+                sleep_cycles(6);
+            }
+            // ROL ABS
+            0x2E => {
+                self.rol(AddressingMode::Absolute);
+                sleep_cycles(6);
+            }
+            // ROL ABS X
+            0x3E => {
+                self.rol(AddressingMode::AbsoluteX);
+                sleep_cycles(7);
+            }
+
+            // ROR A
+            0x6A => {
+                self.ror(AddressingMode::NoneAddressing);
+                sleep_cycles(2);
+            }
+            // ROR ZP
+            0x66 => {
+                self.ror(AddressingMode::ZeroPage);
+                sleep_cycles(5);
+            }
+            // ROR ZP X
+            0x76 => {
+                self.ror(AddressingMode::ZeroPageX);
+                sleep_cycles(6);
+            }
+            // ROR ABS
+            0x6E => {
+                self.ror(AddressingMode::Absolute);
+                sleep_cycles(6);
+            }
+            // ROR ABS X
+            0x7E => {
+                self.ror(AddressingMode::AbsoluteX);
+                sleep_cycles(7);
+            }
             _ => unimplemented!("{:#02x} opcode is not implemented or illegal!", instruction),
         }
     }
 
+    fn ror(&mut self, mode: AddressingMode) {
+        if let AddressingMode::NoneAddressing = mode {
+            let mut value = self.registers.a;
+            self.registers.carry = (value & 1) > 0;
+            value >>= 1;
+            value |= if self.registers.carry { 0x80 } else { 0 };
+            self.registers.a = value;
+        } else {
+            let addr = self.get_operand_address(mode);
+            let mut value = self.read(addr);
+            self.registers.carry = (value & 1) > 0;
+            value >>= 1;
+            value |= if self.registers.carry { 0x80 } else { 0 };
+            self.write(addr, value);
+        };
+    }
+    fn rol(&mut self, mode: AddressingMode) {
+        if let AddressingMode::NoneAddressing = mode {
+            let mut value = self.registers.a;
+            self.registers.carry = value >= 0x80;
+            value <<= 1;
+            value |= if self.registers.carry { 1 } else { 0 };
+            self.registers.a = value;
+        } else {
+            let addr = self.get_operand_address(mode);
+            let mut value = self.read(addr);
+            self.registers.carry = value >= 0x80;
+            value <<= 1;
+            value |= if self.registers.carry { 1 } else { 0 };
+            self.write(addr, value);
+        };
+    }
     fn dex(&mut self) {
         self.registers.x = self.registers.x.wrapping_sub(1);
         let x = self.registers.x;
@@ -1023,7 +1106,7 @@ impl CPU {
         let value = self.read(addr);
         self.registers.a |= value;
         self.registers.zero = self.registers.a == 0;
-        self.registers.negative = self.registers.a > 0x80;
+        self.registers.negative = self.registers.a >= 0x80;
     }
 
     fn xor(&mut self, mode: AddressingMode) {
@@ -1031,14 +1114,14 @@ impl CPU {
         let value = self.read(addr);
         self.registers.a ^= value;
         self.registers.zero = self.registers.a == 0;
-        self.registers.negative = self.registers.a > 0x80;
+        self.registers.negative = self.registers.a >= 0x80;
     }
     fn and(&mut self, mode: AddressingMode) {
         let addr = self.get_operand_address(mode);
         let value = self.read(addr);
         self.registers.a &= value;
         self.registers.zero = self.registers.a == 0;
-        self.registers.negative = self.registers.a > 0x80;
+        self.registers.negative = self.registers.a >= 0x80;
     }
 
     fn lsr(&mut self, mode: AddressingMode) {

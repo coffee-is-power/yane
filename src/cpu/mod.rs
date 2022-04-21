@@ -501,8 +501,93 @@ impl CPU {
                 self.tya();
                 sleep_cycles(2);
             }
+            // STA zp
+            0x85 => {
+                self.sta(AddressingMode::ZeroPage);
+                sleep_cycles(3);
+            }
+            // STA zp + x
+            0x95 => {
+                self.sta(AddressingMode::ZeroPageX);
+                sleep_cycles(4);
+            }
+            // STA abs
+            0x8D => {
+                self.sta(AddressingMode::Absolute);
+                sleep_cycles(4);
+            }
+            // STA abs + x
+            0x9D => {
+                self.sta(AddressingMode::AbsoluteX);
+                sleep_cycles(5);
+            }
+            // STA abs + y
+            0x99 => {
+                self.sta(AddressingMode::AbsoluteY);
+                sleep_cycles(5);
+            }
+            // STA indirect x
+            0x81 => {
+                self.sta(AddressingMode::IndirectX);
+                sleep_cycles(6);
+            }
+            // STA indirect y
+            0x91 => {
+                self.sta(AddressingMode::IndirectY);
+                sleep_cycles(6);
+            }
+
+            // STX zp
+            0x86 => {
+                self.stx(AddressingMode::ZeroPage);
+                sleep_cycles(3);
+            }
+            // STX zp + y
+            0x96 => {
+                self.stx(AddressingMode::ZeroPageY);
+                sleep_cycles(4);
+            }
+            // STX abs
+            0x8E => {
+                self.stx(AddressingMode::Absolute);
+                sleep_cycles(4);
+            }
+            // STy zp
+            0x84 => {
+                self.sty(AddressingMode::ZeroPage);
+                sleep_cycles(3);
+            }
+            // STY zp + x
+            0x94 => {
+                self.sty(AddressingMode::ZeroPageX);
+                sleep_cycles(4);
+            }
+            // STY abs
+            0x8C => {
+                self.sty(AddressingMode::Absolute);
+                sleep_cycles(4);
+            }
+            // BRK
+            0 => {
+                self.irq();
+            }
             _ => unimplemented!("{:#02x} opcode is not implemented or illegal!", instruction),
         }
+    }
+    fn sta(&mut self, mode: AddressingMode) {
+        let addr = self.get_operand_address(mode);
+        let value = self.read(addr);
+        self.registers.a = value;
+    }
+    fn stx(&mut self, mode: AddressingMode) {
+        let addr = self.get_operand_address(mode);
+        let value = self.read(addr);
+        self.registers.x = value;
+    }
+    fn sty(&mut self, mode: AddressingMode) {
+        let addr = self.get_operand_address(mode);
+        let value = self.read(addr);
+        self.registers.y = value;
     }
     fn bit(&mut self, mode: AddressingMode) {
         let addr = self.get_operand_address(mode);
@@ -511,6 +596,29 @@ impl CPU {
         self.registers.zero = result == 0;
         self.registers.negative = (value & 0b10000000u8) != 0;
         self.registers.overflow = (value & 0b01000000u8) != 0;
+    }
+    fn irq(&mut self) {
+        if self.registers.interrupt_disable {
+            return;
+        }
+        self.push(((self.registers.program_counter & 0xFF00) >> 8) as u8);
+        self.push((self.registers.program_counter) as u8);
+        self.push(self.registers.get_flags());
+        let new_pc = self.read_u16(0xFFFE);
+        self.registers.program_counter = new_pc;
+    }
+    fn nmi(&mut self) {
+        self.push(((self.registers.program_counter & 0xFF00) >> 8) as u8);
+        self.push((self.registers.program_counter) as u8);
+        self.push(self.registers.get_flags());
+        self.registers.interrupt_disable = true;
+        let new_pc = self.read_u16(0xFFFA);
+        self.registers.program_counter = new_pc;
+    }
+    fn rti(&mut self) {
+        let ps = self.pop();
+        self.registers.set_flags_from_byte(ps);
+        self.rts();
     }
     fn tax(&mut self) {
         self.registers.x = self.registers.a;

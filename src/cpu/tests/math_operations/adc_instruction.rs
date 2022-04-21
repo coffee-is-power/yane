@@ -174,17 +174,17 @@ fn carry_is_on_when_overflows() {
     rom[0xFFFC - 0x8000] = 0x00;
     rom[0xFFFD - 0x8000] = 0x80;
     rom[0] = 0x69;
-    rom[1] = 0xFF;
+    rom[1] = 0x7F;
     rom[2] = 0x69;
-    rom[3] = 2;
+    rom[3] = 1;
     let mut cpu = CPU::with_rom(rom);
     cpu.init();
     cpu.exec();
     cpu.exec();
 
     assert_eq!(cpu.registers.a, 1);
-    assert_eq!(cpu.registers.carry, true);
-    assert_eq!(cpu.registers.overflow, true);
+    assert!(!cpu.registers.carry);
+    assert!(cpu.registers.overflow);
 }
 #[test]
 fn adds_carry_to_sum() {

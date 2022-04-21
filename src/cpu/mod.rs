@@ -25,6 +25,7 @@ pub enum AddressingMode {
     Absolute,
     AbsoluteX,
     AbsoluteY,
+    Indirect,
     IndirectX,
     IndirectY,
     NoneAddressing,
@@ -54,6 +55,10 @@ impl CPU {
     }
     fn get_operand_address(&mut self, mode: AddressingMode) -> u16 {
         match mode {
+            AddressingMode::Indirect => {
+                self.registers.program_counter += 2;
+                self.read_u16(self.read_u16(self.registers.program_counter - 2))
+            }
             AddressingMode::Immediate => {
                 self.registers.program_counter += 1;
                 self.registers.program_counter - 1
@@ -662,8 +667,23 @@ impl CPU {
                 self.dec(AddressingMode::AbsoluteX);
                 sleep_cycles(5);
             }
+            //JMP abs
+            0x4C => {
+                self.jmp(AddressingMode::Absolute);
+                sleep_cycles(3);
+            }
+            //JMP indirect
+            0x6C => {
+                self.jmp(AddressingMode::Indirect);
+                sleep_cycles(3);
+            }
             _ => unimplemented!("{:#02x} opcode is not implemented or illegal!", instruction),
         }
+    }
+    fn jmp(&mut self, mode: AddressingMode) {
+        let addr = self.get_operand_address(mode);
+        let new_pc = self.read_u16(addr);
+        self.registers.program_counter = new_pc;
     }
     fn dec(&mut self, mode: AddressingMode) {
         let addr = self.get_operand_address(mode);

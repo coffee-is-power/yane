@@ -572,8 +572,54 @@ impl CPU {
                 self.irq();
                 sleep_cycles(7);
             }
+            // CMP imm
+            0xC9 => {
+                self.cmp(AddressingMode::Immediate);
+                sleep_cycles(2);
+            }
+            // CMP zp
+            0xC5 => {
+                self.cmp(AddressingMode::ZeroPage);
+                sleep_cycles(3);
+            }
+            // CMP zp x
+            0xD5 => {
+                self.cmp(AddressingMode::ZeroPageX);
+                sleep_cycles(4);
+            }
+            // CMP abs
+            0xCD => {
+                self.cmp(AddressingMode::Absolute);
+                sleep_cycles(4);
+            }
+            // CMP abs X
+            0xDD => {
+                self.cmp(AddressingMode::AbsoluteX);
+                sleep_cycles(4);
+            }
+            // CMP abs Y
+            0xD9 => {
+                self.cmp(AddressingMode::AbsoluteY);
+                sleep_cycles(4);
+            }
+            // CMP indirect X
+            0xC1 => {
+                self.cmp(AddressingMode::IndirectX);
+                sleep_cycles(6);
+            }
+            // CMP indirect Y
+            0xD1 => {
+                self.cmp(AddressingMode::IndirectY);
+                sleep_cycles(5);
+            }
             _ => unimplemented!("{:#02x} opcode is not implemented or illegal!", instruction),
         }
+    }
+    fn cmp(&mut self, mode: AddressingMode) {
+        let addr = self.get_operand_address(mode);
+        let value = self.read(addr);
+        self.registers.zero = value == self.registers.a;
+        self.registers.negative = self.registers.a >= 0x80;
     }
     fn sta(&mut self, mode: AddressingMode) {
         let addr = self.get_operand_address(mode);

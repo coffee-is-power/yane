@@ -813,10 +813,14 @@ impl CPU {
             .registers
             .a
             .overflowing_add(value + if self.registers.carry { 1 } else { 0 });
+        let a = self.registers.a & 0x80 > 0;
+        let value_sign = value & 0x80 > 0;
+        let result_sign = result & 0x80 > 0;
+        // Thanks to OLC for this line
+        self.registers.overflow = (a^result_sign)&&(!(a^value_sign));
         self.registers.a = result;
         self.registers.carry = carry;
         self.registers.zero = result == 0;
-        self.registers.overflow = carry;
         self.registers.negative = result >= 0x80;
     }
     fn sei(&mut self) {

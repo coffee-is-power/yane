@@ -785,17 +785,40 @@ impl CPU {
                 self.dey();
                 sleep_cycles(2);
             }
+            // INX
+            0xE8 => {
+                self.inx();
+                sleep_cycles(2);
+            }
+            // INY
+            0xC8 => {
+                self.iny();
+                sleep_cycles(2);
+            }
             _ => unimplemented!("{:#02x} opcode is not implemented or illegal!", instruction),
         }
     }
+
     fn dex(&mut self) {
-        self.registers.x -= 1;
+        self.registers.x = self.registers.x.wrapping_sub(1);
         let x = self.registers.x;
         self.registers.zero = x == 0;
         self.registers.negative = x >= 0x80;
     }
     fn dey(&mut self) {
-        self.registers.y -= 1;
+        self.registers.y = self.registers.y.wrapping_sub(1);
+        let y = self.registers.y;
+        self.registers.zero = y == 0;
+        self.registers.negative = y >= 0x80;
+    }
+    fn inx(&mut self) {
+        self.registers.x = self.registers.x.wrapping_add(1);
+        let x = self.registers.x;
+        self.registers.zero = x == 0;
+        self.registers.negative = x >= 0x80;
+    }
+    fn iny(&mut self) {
+        self.registers.y = self.registers.y.wrapping_add(1);
         let y = self.registers.y;
         self.registers.zero = y == 0;
         self.registers.negative = y >= 0x80;

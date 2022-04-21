@@ -570,6 +570,7 @@ impl CPU {
             // BRK
             0 => {
                 self.irq();
+                sleep_cycles(7);
             }
             _ => unimplemented!("{:#02x} opcode is not implemented or illegal!", instruction),
         }

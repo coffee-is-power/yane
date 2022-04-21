@@ -768,6 +768,8 @@ impl CPU {
     }
     fn pla(&mut self) {
         self.registers.a = self.pop();
+        self.registers.negative = self.registers.a >= 0x80;
+        self.registers.zero = self.registers.a == 0;
     }
     fn clc(&mut self) {
         self.registers.carry = false;
@@ -817,7 +819,24 @@ impl CPU {
         let value_sign = value & 0x80 > 0;
         let result_sign = result & 0x80 > 0;
         // Thanks to OLC for this line
-        self.registers.overflow = (a^result_sign)&&(!(a^value_sign));
+        self.registers.overflow = (a ^ result_sign) && (!(a ^ value_sign));
+        self.registers.a = result;
+        self.registers.carry = carry;
+        self.registers.zero = result == 0;
+        self.registers.negative = result >= 0x80;
+    }
+    fn sbc(&mut self, mode: AddressingMode) {
+        let addr = self.get_operand_address(mode);
+        let value = !self.read(addr);
+        let (result, carry) = self
+            .registers
+            .a
+            .overflowing_add(value + if self.registers.carry { 1 } else { 0 });
+        let a = self.registers.a & 0x80 > 0;
+        let value_sign = value & 0x80 > 0;
+        let result_sign = result & 0x80 > 0;
+        // Thanks to OLC for this line
+        self.registers.overflow = (a ^ result_sign) && (!(a ^ value_sign));
         self.registers.a = result;
         self.registers.carry = carry;
         self.registers.zero = result == 0;

@@ -719,8 +719,30 @@ impl CPU {
                 self.sbc(AddressingMode::IndirectY);
                 sleep_cycles(5);
             }
+            // DEX
+            0xCA => {
+                self.dex();
+                sleep_cycles(2);
+            }
+            // DEY
+            0x88 => {
+                self.dey();
+                sleep_cycles(2);
+            }
             _ => unimplemented!("{:#02x} opcode is not implemented or illegal!", instruction),
         }
+    }
+    fn dex(&mut self) {
+        self.registers.x -= 1;
+        let x = self.registers.x;
+        self.registers.zero = x == 0;
+        self.registers.negative = x >= 0x80;
+    }
+    fn dey(&mut self) {
+        self.registers.y -= 1;
+        let y = self.registers.y;
+        self.registers.zero = y == 0;
+        self.registers.negative = y >= 0x80;
     }
     fn jmp(&mut self, mode: AddressingMode) {
         let addr = self.get_operand_address(mode);

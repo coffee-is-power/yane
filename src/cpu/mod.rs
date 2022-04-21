@@ -612,14 +612,83 @@ impl CPU {
                 self.cmp(AddressingMode::IndirectY);
                 sleep_cycles(5);
             }
+            //CPX imm
+            0xE0 => {
+                self.cpx(AddressingMode::Immediate);
+                sleep_cycles(2);
+            }
+            //CPX zp
+            0xE4 => {
+                self.cpx(AddressingMode::ZeroPage);
+                sleep_cycles(3);
+            }
+            //CPX abs
+            0xEC => {
+                self.cpx(AddressingMode::Absolute);
+                sleep_cycles(4);
+            }
+            //CPY imm
+            0xC0 => {
+                self.cpy(AddressingMode::Immediate);
+                sleep_cycles(2);
+            }
+            //CPY zp
+            0xC4 => {
+                self.cpy(AddressingMode::ZeroPage);
+                sleep_cycles(3);
+            }
+            //CPY abs
+            0xCC => {
+                self.cpy(AddressingMode::Absolute);
+                sleep_cycles(4);
+            }
+            // DEC zp
+            0xC6 => {
+                self.dec(AddressingMode::ZeroPage);
+                sleep_cycles(5);
+            }
+            // DEC zp x
+            0xD6 => {
+                self.dec(AddressingMode::ZeroPageX);
+                sleep_cycles(5);
+            }
+            // DEC abs
+            0xCE => {
+                self.dec(AddressingMode::Absolute);
+                sleep_cycles(5);
+            }
+            // DEC abs x
+            0xDE => {
+                self.dec(AddressingMode::AbsoluteX);
+                sleep_cycles(5);
+            }
             _ => unimplemented!("{:#02x} opcode is not implemented or illegal!", instruction),
         }
+    }
+    fn dec(&mut self, mode: AddressingMode) {
+        let addr = self.get_operand_address(mode);
+        let value = self.read(addr) - 1;
+        self.write(addr, value);
+        self.registers.zero = value == 0;
+        self.registers.negative = value >= 0x80;
     }
     fn cmp(&mut self, mode: AddressingMode) {
         let addr = self.get_operand_address(mode);
         let value = self.read(addr);
         self.registers.zero = value == self.registers.a;
         self.registers.negative = self.registers.a >= 0x80;
+    }
+    fn cpy(&mut self, mode: AddressingMode) {
+        let addr = self.get_operand_address(mode);
+        let value = self.read(addr);
+        self.registers.zero = value == self.registers.y;
+        self.registers.negative = self.registers.y >= 0x80;
+    }
+    fn cpx(&mut self, mode: AddressingMode) {
+        let addr = self.get_operand_address(mode);
+        let value = self.read(addr);
+        self.registers.zero = value == self.registers.x;
+        self.registers.negative = self.registers.x >= 0x80;
     }
     fn sta(&mut self, mode: AddressingMode) {
         let addr = self.get_operand_address(mode);

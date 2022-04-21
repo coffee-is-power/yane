@@ -677,6 +677,48 @@ impl CPU {
                 self.jmp(AddressingMode::Indirect);
                 sleep_cycles(3);
             }
+            // SBC imm
+            0xE9 => {
+                self.sbc(AddressingMode::Immediate);
+                sleep_cycles(2);
+            }
+            // SBC zp
+            0xE5 => {
+                self.sbc(AddressingMode::ZeroPage);
+                sleep_cycles(3);
+            }
+
+            // SBC zp x
+            0xF5 => {
+                self.sbc(AddressingMode::ZeroPageX);
+                sleep_cycles(4);
+            }
+            // SBC abs
+            0xED => {
+                self.sbc(AddressingMode::Absolute);
+                sleep_cycles(4);
+            }
+
+            // SBC abs X
+            0xFD => {
+                self.sbc(AddressingMode::AbsoluteX);
+                sleep_cycles(4);
+            }
+            // SBC abs Y
+            0xF9 => {
+                self.sbc(AddressingMode::AbsoluteY);
+                sleep_cycles(4);
+            }
+            // SBC Indirect X
+            0xE1 => {
+                self.sbc(AddressingMode::IndirectX);
+                sleep_cycles(6);
+            }
+            // SBC Indirect Y
+            0xF1 => {
+                self.sbc(AddressingMode::IndirectY);
+                sleep_cycles(5);
+            }
             _ => unimplemented!("{:#02x} opcode is not implemented or illegal!", instruction),
         }
     }

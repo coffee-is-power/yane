@@ -326,6 +326,40 @@ impl CPU {
                 self.and(AddressingMode::IndirectY);
                 sleep_cycles(5);
             }
+            // EOR
+            0x49 => {
+                self.xor(AddressingMode::Immediate);
+                sleep_cycles(2);
+            }
+            0x45 => {
+                self.xor(AddressingMode::ZeroPage);
+                sleep_cycles(3);
+            }
+            0x55 => {
+                self.xor(AddressingMode::ZeroPageX);
+                sleep_cycles(4);
+            }
+
+            0x4D => {
+                self.xor(AddressingMode::Absolute);
+                sleep_cycles(4);
+            }
+            0x5D => {
+                self.xor(AddressingMode::AbsoluteX);
+                sleep_cycles(4);
+            }
+            0x59 => {
+                self.xor(AddressingMode::AbsoluteY);
+                sleep_cycles(4);
+            }
+            0x41 => {
+                self.xor(AddressingMode::IndirectX);
+                sleep_cycles(6);
+            }
+            0x51 => {
+                self.xor(AddressingMode::IndirectY);
+                sleep_cycles(5);
+            }
             // LSR
             0x4A => {
                 self.lsr(AddressingMode::NoneAddressing);
@@ -965,12 +999,23 @@ impl CPU {
         let addr = self.get_operand_address(mode);
         let value = self.read(addr);
         self.registers.a |= value;
+        self.registers.zero = self.registers.a == 0;
+        self.registers.negative = self.registers.a > 0x80;
     }
 
+    fn xor(&mut self, mode: AddressingMode) {
+        let addr = self.get_operand_address(mode);
+        let value = self.read(addr);
+        self.registers.a ^= value;
+        self.registers.zero = self.registers.a == 0;
+        self.registers.negative = self.registers.a > 0x80;
+    }
     fn and(&mut self, mode: AddressingMode) {
         let addr = self.get_operand_address(mode);
         let value = self.read(addr);
         self.registers.a &= value;
+        self.registers.zero = self.registers.a == 0;
+        self.registers.negative = self.registers.a > 0x80;
     }
 
     fn lsr(&mut self, mode: AddressingMode) {

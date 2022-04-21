@@ -667,6 +667,28 @@ impl CPU {
                 self.dec(AddressingMode::AbsoluteX);
                 sleep_cycles(5);
             }
+
+            // INC zp
+            0xE6 => {
+                self.inc(AddressingMode::ZeroPage);
+                sleep_cycles(5);
+            }
+            // INC zp x
+            0xF6 => {
+                self.inc(AddressingMode::ZeroPageX);
+                sleep_cycles(6);
+            }
+            // INC abs
+            0xEE => {
+                self.inc(AddressingMode::Absolute);
+                sleep_cycles(6);
+            }
+            // INC abs x
+            0xFE => {
+                self.inc(AddressingMode::AbsoluteX);
+                sleep_cycles(7);
+            }
+
             //JMP abs
             0x4C => {
                 self.jmp(AddressingMode::Absolute);
@@ -751,7 +773,14 @@ impl CPU {
     }
     fn dec(&mut self, mode: AddressingMode) {
         let addr = self.get_operand_address(mode);
-        let value = self.read(addr) - 1;
+        let value = self.read(addr).wrapping_sub(1);
+        self.write(addr, value);
+        self.registers.zero = value == 0;
+        self.registers.negative = value >= 0x80;
+    }
+    fn inc(&mut self, mode: AddressingMode) {
+        let addr = self.get_operand_address(mode);
+        let value = self.read(addr).wrapping_add(1);
         self.write(addr, value);
         self.registers.zero = value == 0;
         self.registers.negative = value >= 0x80;

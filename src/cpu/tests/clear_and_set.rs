@@ -1,6 +1,6 @@
 use crate::CPU;
 #[test]
-fn clc(){
+fn clc() {
     let mut rom = [0u8; 0x7fff];
 
     rom[0xFFFC - 0x8000] = 0x00;
@@ -13,7 +13,7 @@ fn clc(){
     assert!(!cpu.registers.carry);
 }
 #[test]
-fn sec(){
+fn sec() {
     let mut rom = [0u8; 0x7fff];
 
     rom[0xFFFC - 0x8000] = 0x00;
@@ -26,7 +26,7 @@ fn sec(){
     assert!(cpu.registers.carry);
 }
 #[test]
-fn clv(){
+fn clv() {
     let mut rom = [0u8; 0x7fff];
 
     rom[0xFFFC - 0x8000] = 0x00;

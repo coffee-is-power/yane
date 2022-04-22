@@ -10,8 +10,15 @@ impl Mapper for Mapper0 {
         addr & (if self.prg_banks > 1 { 0x7fff } else { 0x3fff })
     }
 
-    fn cpu_map_write(&mut self, addr: u16) -> u16 {
+    fn cpu_map_write(&self, addr: u16) -> u16 {
         addr
+    }
+    fn ppu_map_read(&self, addr: u16) -> u16 {
+        addr
+    }
+    fn ppu_map_write(&self, addr: u16) -> u16 {
+       // not interested
+       addr 
     }
 }
 impl Mapper0 {

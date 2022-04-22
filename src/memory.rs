@@ -27,13 +27,25 @@ impl Memory {
         }
     }
     pub fn cpu_read(&self, address: u16) -> u8 {
-        return if address < 0x2000 {
+        if address < 0x2000 {
             self.ram[address as usize]
         } else if address & 0b1000000000000000 == 0x8000 {
             self.cartridge().cpu_read(address)
         } else {
             eprintln!("ERROR: Reading Unmapped memory!");
             0x00
-        };
+        }
+    }
+    pub fn ppu_read(&self, address: u16) -> u8 {
+       if address < 0x1fff {
+        self.cartridge().ppu_read(address)
+       } else {
+        0
+       }
+    }
+    pub fn ppu_write(&mut self, address: u16, data: u8) {
+       if address < 0x1fff {
+         self.mut_cartridge().ppu_write(address, data)
+       } 
     }
 }

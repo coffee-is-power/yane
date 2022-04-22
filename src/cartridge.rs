@@ -73,4 +73,13 @@ impl Cartridge {
         let mapped_address = (*self.mapper).cpu_map_write(addr);
         self.prg_memory[mapped_address as usize] = value;
     }
+    pub fn ppu_read(&self, addr: u16) -> u8 {
+        let mapped_address = (*self.mapper).ppu_map_read(addr);
+        self.chr_memory[mapped_address as usize]
+    }
+    pub fn ppu_write(&mut self, addr: u16, value: u8) {
+        let mapped_address = (*self.mapper).ppu_map_write(addr);
+        self.chr_memory[mapped_address as usize] = value;
+    }
+
 }

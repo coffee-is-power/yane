@@ -52,8 +52,8 @@ impl Cartridge {
 
                 let chr_banks = header.chr_rom_chunks;
                 let mut chr_memory = Vec::<u8>::new();
-                prg_memory.resize((chr_banks as u32 * 0x4000) as usize, 0);
-                file.read_exact(chr_memory.as_mut_slice())?;
+                chr_memory.resize((chr_banks as u32 * 0x4000) as usize, 0);
+                file.read(chr_memory.as_mut_slice())?;
                 let mapper: Box<dyn Mapper> = get_mapper_by_id(mapper_id, prg_banks, chr_banks);
                 Ok(Self {
                     chr_memory,

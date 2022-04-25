@@ -2,8 +2,8 @@
 
  - CPU :sunny::cloud::construction_worker_man::construction::construction::construction::construction::construction::construction:
    - Bus :ballot_box_with_check:
-   - Instructions :x:
- - Mappers :x:
+   - Instructions :ballot_box_with_check:
+ - Mappers :ballot_box_with_check:
  - PPU (Picture Processing Unit) :x:
  - APU (Audio Processing Unit) :x:
  - Controllers :x:

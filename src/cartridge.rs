@@ -7,10 +7,6 @@ use std::os::unix::fs::MetadataExt;
 pub struct Cartridge {
     prg_memory: Vec<u8>,
     chr_memory: Vec<u8>,
-    mapper_id: u8,
-    prg_banks: u8,
-    chr_banks: u8,
-    header: INesHeader,
     mapper: Box<dyn Mapper>,
 }
 #[repr(C, packed)]
@@ -32,6 +28,13 @@ fn get_mapper_by_id(mapper_id: u8, prg_banks: u8, chr_banks: u8) -> Box<dyn Mapp
     }
 }
 impl Cartridge {
+    pub fn from_rom(rom: Vec<u8>) -> Self {
+        Self {
+            chr_memory: vec![],
+            prg_memory: rom,
+            mapper: Box::new(Mapper0::new(1, 0)),
+        }
+    }
     pub fn from_file(path: &String) -> std::io::Result<Self> {
         let mut file = File::open(path)?;
         let mut data = [0u8; std::mem::size_of::<INesHeader>()];
@@ -53,33 +56,48 @@ impl Cartridge {
                 file.read_exact(chr_memory.as_mut_slice())?;
                 let mapper: Box<dyn Mapper> = get_mapper_by_id(mapper_id, prg_banks, chr_banks);
                 Ok(Self {
-                    chr_banks,
                     chr_memory,
                     prg_memory,
-                    prg_banks,
-                    mapper_id,
-                    header,
-                    mapper,
+                    mapper
                 })
             }
             _ => panic!("File type {} not supported!", file_type),
         }
     }
-    pub fn cpu_read(&self, addr: u16) -> u8 {
-        let mapped_address = (*self.mapper).cpu_map_read(addr);
-        self.prg_memory[mapped_address as usize]
+    pub fn cpu_read(&self, addr: u16) -> (u8, bool) {
+        let (mapped_address, interested) = (*self.mapper).cpu_map_read(addr);
+        if interested {
+            println!("Physical address: {:#02x}", mapped_address);
+            (self.prg_memory[mapped_address as usize], true)
+        } else {
+            (0, false)
+        }
     }
-    pub fn cpu_write(&mut self, addr: u16, value: u8) {
-        let mapped_address = (*self.mapper).cpu_map_write(addr);
-        self.prg_memory[mapped_address as usize] = value;
+    pub fn cpu_write(&mut self, addr: u16, value: u8) -> bool {
+        let (mapped_address, interested) = (*self.mapper).cpu_map_write(addr);
+        if interested {
+            self.prg_memory[mapped_address as usize] = value;
+            true
+        } else {
+            false
+        }
     }
-    pub fn ppu_read(&self, addr: u16) -> u8 {
-        let mapped_address = (*self.mapper).ppu_map_read(addr);
-        self.chr_memory[mapped_address as usize]
-    }
-    pub fn ppu_write(&mut self, addr: u16, value: u8) {
-        let mapped_address = (*self.mapper).ppu_map_write(addr);
-        self.chr_memory[mapped_address as usize] = value;
-    }
+    pub fn ppu_read(&self, addr: u16) -> (u8, bool) {
+        let (mapped_address, interested) = (*self.mapper).ppu_map_read(addr);
+        if interested {
 
+            (self.chr_memory[mapped_address as usize], true)
+        } else {
+            (0, false)
+        }
+    }
+    pub fn ppu_write(&mut self, addr: u16, value: u8) -> bool {
+        let (mapped_address, interested) = (*self.mapper).ppu_map_write(addr);
+        if interested {
+            self.chr_memory[mapped_address as usize] = value;
+            true
+        } else {
+            false
+        }
+    }
 }

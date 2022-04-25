@@ -6,19 +6,46 @@ pub struct Mapper0 {
 }
 
 impl Mapper for Mapper0 {
-    fn cpu_map_read(&self, addr: u16) -> u16 {
-        addr & (if self.prg_banks > 1 { 0x7fff } else { 0x3fff })
+    fn cpu_map_read(&self, addr: u16) -> (u16, bool) {
+        if addr >= 0x8000 {
+            let mask: u16;
+            if self.prg_banks > 1 {
+                mask = 0x7fff;
+            } else {
+                mask = 0x3FFF;
+            }
+            (addr & mask, true)
+        } else {
+            (0, false)
+        }
     }
 
-    fn cpu_map_write(&self, addr: u16) -> u16 {
-        addr
+    fn cpu_map_write(&self, addr: u16) -> (u16, bool) {
+        if addr >= 0x8000 {
+            let mask: u16;
+            if self.prg_banks > 1 {
+                mask = 0x7fff;
+            } else {
+                mask = 0x3FFF;
+            }
+            (addr & mask, true)
+        } else {
+            (0, false)
+        }
     }
-    fn ppu_map_read(&self, addr: u16) -> u16 {
-        addr
+    fn ppu_map_read(&self, addr: u16) -> (u16, bool) {
+        if addr < 0x2000 {
+            (addr, true)
+        } else {
+            (0, false)
+        }
     }
-    fn ppu_map_write(&self, addr: u16) -> u16 {
-       // not interested
-       addr 
+    fn ppu_map_write(&self, addr: u16) -> (u16, bool) {
+        if addr < 0x2000 && self.chr_banks == 0 {
+            (addr, true)
+        } else {
+            (0, false)
+        }
     }
 }
 impl Mapper0 {

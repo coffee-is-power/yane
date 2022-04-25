@@ -11,6 +11,8 @@ use crate::cartridge::Cartridge;
 use crate::memory::Memory;
 use crate::ppu::PPU;
 use cpu::CPU;
+use raylib::color::Color;
+use raylib::drawing::RaylibDraw;
 use raylib::{RaylibHandle, RaylibThread};
 use std::rc::Rc;
 
@@ -25,7 +27,14 @@ fn main() {
     cpu.init();
     while !rl.window_should_close() {
         clock_counter = clock(clock_counter, &mut cpu, &mut ppu);
-        rl.begin_drawing(&rl_thread);
+        let mut d = rl.begin_drawing(&rl_thread);
+        let colors = ppu.get_pattern_tables(0, 1);
+        for x in 0..128i32 {
+            for y in 0..128i32 {
+                let color = colors[y as usize][x as usize];
+                d.draw_pixel(x, y, Color::new(color.r, color.g, color.b, 255));
+            }
+        }
     }
 }
 fn clock(clock_counter: u32, cpu: &mut CPU, ppu: &mut PPU) -> u32 {

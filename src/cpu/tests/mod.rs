@@ -8,15 +8,21 @@ mod stack;
 mod subroutines;
 mod transfer_instructions;
 
-use crate::CPU;
+use std::rc::Rc;
+
+use crate::{CPU, cartridge::Cartridge, memory::Memory};
 
 #[test]
 fn init_cpu_sets_correct_pc() {
     let mut rom = [0u8; 0x7fff];
 
-    rom[0xFFFC - 0x8000] = 0x00;
-    rom[0xFFFD - 0x8000] = 0x80;
-    let mut cpu = CPU::with_rom(rom);
+    rom[0x3FFC] = 0x00;
+    rom[0x3FFD] = 0x80;
+
+
+    let cartridge = Cartridge::from_rom(rom.to_vec());
+    let memory = Memory::new(Rc::new(cartridge));
+    let mut cpu = CPU::new(Rc::new(memory));
     cpu.init();
     assert_eq!(
         cpu.registers.program_counter, 0x8000,
@@ -25,28 +31,22 @@ fn init_cpu_sets_correct_pc() {
 }
 #[test]
 fn ram_write_test() {
-    let mut cpu = CPU::new();
+    let cartridge = Cartridge::from_rom(vec![]);
+    let memory = Memory::new(Rc::new(cartridge));
+    let mut cpu = CPU::new(Rc::new(memory));
     cpu.write(4, 10);
     assert_eq!(
-        cpu.memory.ram[4], 10,
+        Rc::get_mut(&mut cpu.memory).unwrap().ram[4], 10,
         "The ram must hold the values written to it"
     );
 }
 
 #[test]
-fn rom_write_test() {
-    let mut cpu = CPU::new();
-    cpu.write(0x8004, 10);
-    assert_eq!(
-        cpu.memory.rom[4], 0,
-        "The rom must not change when a write request is made"
-    );
-}
-
-#[test]
 fn ram_read_test() {
-    let mut cpu = CPU::new();
-    cpu.memory.ram[4] = 10;
+    let cartridge = Cartridge::from_rom(vec![]);
+    let memory = Memory::new(Rc::new(cartridge));
+    let mut cpu = CPU::new(Rc::new(memory));
+    Rc::get_mut(&mut cpu.memory).unwrap().ram[4] = 10;
     assert_eq!(
         cpu.read(4),
         10,
@@ -57,8 +57,10 @@ fn ram_read_test() {
 fn read_u16_test() {
     let mut rom = [0u8; 0x7fff];
 
-    rom[0xFFFC - 0x8000] = 0x00;
-    rom[0xFFFD - 0x8000] = 0x80;
-    let cpu = CPU::with_rom(rom);
+    rom[(0xFFFC - 0x8000) & 0x3fff] = 0x00;
+    rom[(0xFFFD - 0x8000) & 0x3fff] = 0x80;
+    let cartridge = Cartridge::from_rom(rom.to_vec());
+    let memory = Memory::new(Rc::new(cartridge));
+    let mut cpu = CPU::new(Rc::new(memory));
     assert_eq!(cpu.read_u16(0xFFFC), 0x8000)
 }

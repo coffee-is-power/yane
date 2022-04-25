@@ -1,9 +1,14 @@
 use crate::cpu::registers::Registers;
-use crate::CPU;
+use std::rc::Rc;
+
+use crate::{CPU, cartridge::Cartridge, memory::Memory};
 
 #[test]
 fn push() {
-    let mut cpu = CPU::new();
+    
+    let cartridge = Cartridge::from_rom(vec![]);
+    let memory = Memory::new(Rc::new(cartridge));
+    let mut cpu = CPU::new(Rc::new(memory));
     cpu.push(10);
     assert_eq!(
         cpu.registers.stack_pointer, 0x23,
@@ -18,7 +23,9 @@ fn push() {
 
 #[test]
 fn pop() {
-    let mut cpu = CPU::new();
+    let cartridge = Cartridge::from_rom(vec![]);
+    let memory = Memory::new(Rc::new(cartridge));
+    let mut cpu = CPU::new(Rc::new(memory));
     cpu.push(10);
 
     let value = cpu.pop();
@@ -37,10 +44,14 @@ fn pop() {
 fn pha() {
     let mut rom = [0u8; 0x7fff];
 
-    rom[0xFFFC - 0x8000] = 0x00;
-    rom[0xFFFD - 0x8000] = 0x80;
+    rom[0x3FFC] = 0x00;
+    rom[0x3FFD] = 0x80;
     rom[0] = 0x48;
-    let mut cpu = CPU::with_rom(rom);
+
+
+    let cartridge = Cartridge::from_rom(rom.to_vec());
+    let memory = Memory::new(Rc::new(cartridge));
+    let mut cpu = CPU::new(Rc::new(memory));
     cpu.init();
     cpu.registers.a = 10;
     cpu.exec();
@@ -51,10 +62,14 @@ fn pha() {
 fn pla() {
     let mut rom = [0u8; 0x7fff];
 
-    rom[0xFFFC - 0x8000] = 0x00;
-    rom[0xFFFD - 0x8000] = 0x80;
+    rom[0x3FFC] = 0x00;
+    rom[0x3FFD] = 0x80;
     rom[0] = 0x68;
-    let mut cpu = CPU::with_rom(rom);
+
+
+    let cartridge = Cartridge::from_rom(rom.to_vec());
+    let memory = Memory::new(Rc::new(cartridge));
+    let mut cpu = CPU::new(Rc::new(memory));
     cpu.init();
     cpu.push(10);
     cpu.exec();
@@ -66,10 +81,14 @@ fn pla() {
 fn php() {
     let mut rom = [0u8; 0x7fff];
 
-    rom[0xFFFC - 0x8000] = 0x00;
-    rom[0xFFFD - 0x8000] = 0x80;
+    rom[0x3FFC] = 0x00;
+    rom[0x3FFD] = 0x80;
     rom[0] = 0x08;
-    let mut cpu = CPU::with_rom(rom);
+
+
+    let cartridge = Cartridge::from_rom(rom.to_vec());
+    let memory = Memory::new(Rc::new(cartridge));
+    let mut cpu = CPU::new(Rc::new(memory));
     cpu.init();
     cpu.registers.carry = true;
     cpu.exec();
@@ -80,10 +99,14 @@ fn php() {
 fn plp() {
     let mut rom = [0u8; 0x7fff];
 
-    rom[0xFFFC - 0x8000] = 0x00;
-    rom[0xFFFD - 0x8000] = 0x80;
+    rom[0x3FFC] = 0x00;
+    rom[0x3FFD] = 0x80;
     rom[0] = 0x28;
-    let mut cpu = CPU::with_rom(rom);
+
+
+    let cartridge = Cartridge::from_rom(rom.to_vec());
+    let memory = Memory::new(Rc::new(cartridge));
+    let mut cpu = CPU::new(Rc::new(memory));
     cpu.init();
     cpu.push(0b10100000);
     cpu.exec();

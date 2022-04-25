@@ -124,7 +124,7 @@ impl CPU {
             .cpu_write(address, data);
     }
     pub fn read(&self, address: u16) -> u8 {
-        let r = self.memory.cpu_read(address);
+        let (r, _) = self.memory.cpu_read(address);
         println!("Read Address {:#02x}: {:#02x}", address, r);
         r
     }
@@ -1282,16 +1282,13 @@ impl CPU {
         if !self.registers.negative {
             let value = self.read(self.registers.program_counter);
 
-            let old_pc = self.registers.program_counter - 1;
+            self.registers.program_counter += 1;
             if value > 0x7F {
-                self.registers.program_counter -= (!value + 1) as u16;
+                self.registers.program_counter -= ((!value) + 1) as u16;
             } else {
                 self.registers.program_counter += value as u16;
             }
-            println!(
-                "Jumped from {} to {}",
-                old_pc, self.registers.program_counter
-            );
+            println!("Jumped");
         }
     }
 

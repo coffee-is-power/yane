@@ -1,15 +1,21 @@
-use crate::CPU;
+use std::rc::Rc;
+
+use crate::{CPU, cartridge::Cartridge, memory::Memory};
 #[test]
 fn immediate() {
     let mut rom = [0u8; 0x7fff];
 
-    rom[0xFFFC - 0x8000] = 0x00;
-    rom[0xFFFD - 0x8000] = 0x80;
+    rom[0x3FFC] = 0x00;
+    rom[0x3FFD] = 0x80;
     rom[0] = 0x69;
     rom[1] = 10;
     rom[2] = 0x69;
     rom[3] = 7;
-    let mut cpu = CPU::with_rom(rom);
+
+
+    let cartridge = Cartridge::from_rom(rom.to_vec());
+    let memory = Memory::new(Rc::new(cartridge));
+    let mut cpu = CPU::new(Rc::new(memory));
     cpu.init();
     cpu.exec();
     cpu.exec();
@@ -20,13 +26,17 @@ fn immediate() {
 fn zeropage() {
     let mut rom = [0u8; 0x7fff];
 
-    rom[0xFFFC - 0x8000] = 0x00;
-    rom[0xFFFD - 0x8000] = 0x80;
+    rom[0x3FFC] = 0x00;
+    rom[0x3FFD] = 0x80;
     rom[0] = 0x65;
     rom[1] = 60;
     rom[2] = 0x65;
     rom[3] = 61;
-    let mut cpu = CPU::with_rom(rom);
+
+
+    let cartridge = Cartridge::from_rom(rom.to_vec());
+    let memory = Memory::new(Rc::new(cartridge));
+    let mut cpu = CPU::new(Rc::new(memory));
     cpu.write(60, 10);
     cpu.write(61, 7);
     cpu.init();
@@ -39,13 +49,17 @@ fn zeropage() {
 fn zeropage_x() {
     let mut rom = [0u8; 0x7fff];
 
-    rom[0xFFFC - 0x8000] = 0x00;
-    rom[0xFFFD - 0x8000] = 0x80;
+    rom[0x3FFC] = 0x00;
+    rom[0x3FFD] = 0x80;
     rom[0] = 0x75;
     rom[1] = 60;
     rom[2] = 0x75;
     rom[3] = 61;
-    let mut cpu = CPU::with_rom(rom);
+
+
+    let cartridge = Cartridge::from_rom(rom.to_vec());
+    let memory = Memory::new(Rc::new(cartridge));
+    let mut cpu = CPU::new(Rc::new(memory));
     cpu.registers.x = 1;
     cpu.write(61, 10);
     cpu.write(62, 7);
@@ -59,8 +73,8 @@ fn zeropage_x() {
 fn abs() {
     let mut rom = [0u8; 0x7fff];
 
-    rom[0xFFFC - 0x8000] = 0x00;
-    rom[0xFFFD - 0x8000] = 0x80;
+    rom[0x3FFC] = 0x00;
+    rom[0x3FFD] = 0x80;
     rom[0] = 0x6D;
     rom[1] = 0x10;
     rom[2] = 0x10;
@@ -68,7 +82,11 @@ fn abs() {
     rom[3] = 0x6D;
     rom[4] = 0x11;
     rom[5] = 0x10;
-    let mut cpu = CPU::with_rom(rom);
+
+
+    let cartridge = Cartridge::from_rom(rom.to_vec());
+    let memory = Memory::new(Rc::new(cartridge));
+    let mut cpu = CPU::new(Rc::new(memory));
     cpu.write(0x1010, 10);
     cpu.write(0x1011, 7);
     cpu.init();
@@ -81,15 +99,19 @@ fn abs() {
 fn abs_x() {
     let mut rom = [0u8; 0x7fff];
 
-    rom[0xFFFC - 0x8000] = 0x00;
-    rom[0xFFFD - 0x8000] = 0x80;
+    rom[0x3FFC] = 0x00;
+    rom[0x3FFD] = 0x80;
     rom[0] = 0x7D;
     rom[1] = 0x10;
     rom[2] = 0x10;
     rom[3] = 0x7D;
     rom[4] = 0x11;
     rom[5] = 0x10;
-    let mut cpu = CPU::with_rom(rom);
+
+
+    let cartridge = Cartridge::from_rom(rom.to_vec());
+    let memory = Memory::new(Rc::new(cartridge));
+    let mut cpu = CPU::new(Rc::new(memory));
     cpu.registers.x = 1;
     cpu.write(0x1011, 10);
     cpu.write(0x1012, 7);
@@ -103,8 +125,8 @@ fn abs_x() {
 fn abs_y() {
     let mut rom = [0u8; 0x7fff];
 
-    rom[0xFFFC - 0x8000] = 0x00;
-    rom[0xFFFD - 0x8000] = 0x80;
+    rom[0x3FFC] = 0x00;
+    rom[0x3FFD] = 0x80;
     rom[0] = 0x79;
     rom[1] = 0x10;
     rom[2] = 0x10;
@@ -112,7 +134,11 @@ fn abs_y() {
     rom[3] = 0x79;
     rom[4] = 0x11;
     rom[5] = 0x10;
-    let mut cpu = CPU::with_rom(rom);
+
+
+    let cartridge = Cartridge::from_rom(rom.to_vec());
+    let memory = Memory::new(Rc::new(cartridge));
+    let mut cpu = CPU::new(Rc::new(memory));
     cpu.registers.y = 1;
     cpu.write(0x1011, 10);
     cpu.write(0x1012, 7);
@@ -126,14 +152,18 @@ fn abs_y() {
 fn indirect_y() {
     let mut rom = [0u8; 0x7fff];
 
-    rom[0xFFFC - 0x8000] = 0x00;
-    rom[0xFFFD - 0x8000] = 0x80;
+    rom[0x3FFC] = 0x00;
+    rom[0x3FFD] = 0x80;
     rom[0] = 0x71;
     rom[1] = 0x11;
 
     rom[2] = 0x71;
     rom[3] = 0x11;
-    let mut cpu = CPU::with_rom(rom);
+
+
+    let cartridge = Cartridge::from_rom(rom.to_vec());
+    let memory = Memory::new(Rc::new(cartridge));
+    let mut cpu = CPU::new(Rc::new(memory));
     cpu.registers.y = 1;
     cpu.write(0x11, 0x11);
     cpu.write(0x12, 0x12);
@@ -149,14 +179,18 @@ fn indirect_y() {
 fn indirect_x() {
     let mut rom = [0u8; 0x7fff];
 
-    rom[0xFFFC - 0x8000] = 0x00;
-    rom[0xFFFD - 0x8000] = 0x80;
+    rom[0x3FFC] = 0x00;
+    rom[0x3FFD] = 0x80;
     rom[0] = 0x61;
     rom[1] = 0x11;
 
     rom[2] = 0x61;
     rom[3] = 0x11;
-    let mut cpu = CPU::with_rom(rom);
+
+
+    let cartridge = Cartridge::from_rom(rom.to_vec());
+    let memory = Memory::new(Rc::new(cartridge));
+    let mut cpu = CPU::new(Rc::new(memory));
     cpu.registers.x = 1;
     cpu.write(0x12, 0x11);
     cpu.write(0x13, 0x12);
@@ -167,36 +201,66 @@ fn indirect_x() {
     cpu.exec();
     assert_eq!(cpu.registers.a, 17);
 }
+
 #[test]
-fn carry_is_on_when_overflows() {
+fn overflow_is_on_when_overflows() {
     let mut rom = [0u8; 0x7fff];
 
-    rom[0xFFFC - 0x8000] = 0x00;
-    rom[0xFFFD - 0x8000] = 0x80;
+    rom[0x3FFC] = 0x00;
+    rom[0x3FFD] = 0x80;
     rom[0] = 0x69;
-    rom[1] = 0x7F;
+    rom[1] = 0x7f;
     rom[2] = 0x69;
     rom[3] = 1;
-    let mut cpu = CPU::with_rom(rom);
+
+
+    let cartridge = Cartridge::from_rom(rom.to_vec());
+    let memory = Memory::new(Rc::new(cartridge));
+    let mut cpu = CPU::new(Rc::new(memory));
     cpu.init();
     cpu.exec();
     cpu.exec();
 
-    assert_eq!(cpu.registers.a, 1);
-    assert!(!cpu.registers.carry);
-    assert!(cpu.registers.overflow);
+    assert_eq!(cpu.registers.a, 0x80);
+    assert!(cpu.registers.overflow);//0x7f + 1 wraps to -127
+}
+#[test]
+fn carry_is_on_when_wraps() {
+    let mut rom = [0u8; 0x7fff];
+
+    rom[0x3FFC] = 0x00;
+    rom[0x3FFD] = 0x80;
+    rom[0] = 0x69;
+    rom[1] = 0xFF;
+    rom[2] = 0x69;
+    rom[3] = 0xFF;
+
+
+    let cartridge = Cartridge::from_rom(rom.to_vec());
+    let memory = Memory::new(Rc::new(cartridge));
+    let mut cpu = CPU::new(Rc::new(memory));
+    cpu.init();
+    cpu.exec();
+    cpu.exec();
+
+    assert_eq!(cpu.registers.a, 0xFE);
+    assert!(cpu.registers.carry);
 }
 #[test]
 fn adds_carry_to_sum() {
     let mut rom = [0u8; 0x7fff];
 
-    rom[0xFFFC - 0x8000] = 0x00;
-    rom[0xFFFD - 0x8000] = 0x80;
+    rom[0x3FFC] = 0x00;
+    rom[0x3FFD] = 0x80;
     rom[0] = 0x69;
     rom[1] = 0xF0;
     rom[2] = 0x69;
     rom[3] = 2;
-    let mut cpu = CPU::with_rom(rom);
+
+
+    let cartridge = Cartridge::from_rom(rom.to_vec());
+    let memory = Memory::new(Rc::new(cartridge));
+    let mut cpu = CPU::new(Rc::new(memory));
     cpu.registers.carry = true;
     cpu.init();
     cpu.exec();

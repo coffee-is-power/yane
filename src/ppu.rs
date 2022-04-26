@@ -127,8 +127,7 @@ impl PPU {
     }
     pub fn ppu_read(&self, address: u16) -> u8 {
         let address = address & 0x3fff;
-        let (data, interested) = self.cartridge.ppu_read(address);
-        if interested {
+        if let Some(data) = self.cartridge.ppu_read(address) {
             data
         } else if address < 0x2000 {
             self.chr_table[((address & 0x1000) >> 12) as usize][(address & 0x0FFF) as usize]

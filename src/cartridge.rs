@@ -64,36 +64,31 @@ impl Cartridge {
             _ => panic!("File type {} not supported!", file_type),
         }
     }
-    pub fn cpu_read(&self, addr: u16) -> (u8, bool) {
-        let (mapped_address, interested) = (*self.mapper).cpu_map_read(addr);
-        if interested {
-            println!("Physical address: {:#02x}", mapped_address);
-            (self.prg_memory[mapped_address as usize], true)
+    pub fn cpu_read(&self, addr: u16) -> Option<u8> {
+        if let Some(mapped_address)= (*self.mapper).cpu_map_read(addr) {
+            Some(self.prg_memory[mapped_address as usize])
         } else {
-            (0, false)
+            None
         }
     }
     pub fn cpu_write(&mut self, addr: u16, value: u8) -> bool {
-        let (mapped_address, interested) = (*self.mapper).cpu_map_write(addr);
-        if interested {
+        if let Some(mapped_address) = (*self.mapper).cpu_map_write(addr) {
             self.prg_memory[mapped_address as usize] = value;
             true
         } else {
             false
         }
     }
-    pub fn ppu_read(&self, addr: u16) -> (u8, bool) {
-        let (mapped_address, interested) = (*self.mapper).ppu_map_read(addr);
-        if interested {
-
-            (self.chr_memory[mapped_address as usize], true)
+    pub fn ppu_read(&self, addr: u16) -> Option<u8> {
+        if let Some(mapped_address)= (*self.mapper).ppu_map_read(addr) {
+            Some(self.chr_memory[mapped_address as usize])
         } else {
-            (0, false)
+            None
         }
     }
     pub fn ppu_write(&mut self, addr: u16, value: u8) -> bool {
-        let (mapped_address, interested) = (*self.mapper).ppu_map_write(addr);
-        if interested {
+        
+        if let Some(mapped_address) = (*self.mapper).ppu_map_write(addr) {
             self.chr_memory[mapped_address as usize] = value;
             true
         } else {

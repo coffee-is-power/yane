@@ -27,22 +27,21 @@ impl Memory {
             false
         }
     }
-    pub fn cpu_read(&self, address: u16) -> (u8, bool) {
-        let (value, interested) = self.cartridge.cpu_read(address);
-        if interested {
-            (value, interested)
+    pub fn cpu_read(&self, address: u16) -> Option<u8> {
+        if let Some(value) = self.cartridge.cpu_read(address) {
+            Some(value)
         } else if address < 0x2000 {
-            (self.ram[(address & 0x7ff) as usize], true)
+            Some(self.ram[(address & 0x7ff) as usize])
         } else {
             eprintln!("ERROR: Reading Unmapped memory!");
-            (0, false)
+            None
         }
     }
-    pub fn ppu_read(&self, address: u16) -> (u8, bool) {
+    pub fn ppu_read(&self, address: u16) -> Option<u8> {
         if address < 0x1fff {
             self.cartridge.ppu_read(address)
         } else {
-            (0, false)
+            None
         }
     }
     pub fn ppu_write(&mut self, address: u16, data: u8) -> bool {

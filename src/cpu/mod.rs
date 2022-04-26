@@ -124,7 +124,7 @@ impl CPU {
             .cpu_write(address, data);
     }
     pub fn read(&self, address: u16) -> u8 {
-        let (r, _) = self.memory.cpu_read(address);
+        let r = self.memory.cpu_read(address).or_else(|| Some(0)).unwrap();
         println!("Read Address {:#02x}: {:#02x}", address, r);
         r
     }

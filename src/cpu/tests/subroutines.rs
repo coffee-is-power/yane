@@ -1,6 +1,6 @@
 use std::rc::Rc;
 
-use crate::{CPU, cartridge::Cartridge, memory::Memory};
+use crate::{CPU, cartridge::Cartridge, memory::Memory, ppu::PPU};
 
 #[test]
 fn jsr() {
@@ -13,8 +13,8 @@ fn jsr() {
     rom[2] = 0x80;
 
 
-    let cartridge = Cartridge::from_rom(rom.to_vec());
-    let memory = Memory::new(Rc::new(cartridge));
+    let cartridge = Rc::new(Cartridge::from_rom(rom.to_vec()));
+    let memory = Memory::new(cartridge.clone(), Rc::new(PPU::new(cartridge.clone())));
     let mut cpu = CPU::new(Rc::new(memory));
     cpu.init();
     cpu.exec();
@@ -38,8 +38,8 @@ fn rts() {
     rom[0x50] = 0x60;
 
 
-    let cartridge = Cartridge::from_rom(rom.to_vec());
-    let memory = Memory::new(Rc::new(cartridge));
+    let cartridge = Rc::new(Cartridge::from_rom(rom.to_vec()));
+    let memory = Memory::new(cartridge.clone(), Rc::new(PPU::new(cartridge.clone())));
     let mut cpu = CPU::new(Rc::new(memory));
     cpu.init();
     cpu.exec();

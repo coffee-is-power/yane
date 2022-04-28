@@ -1,16 +1,18 @@
 use crate::cartridge::Cartridge;
-use std::borrow::BorrowMut;
+use crate::ppu::PPU;
 use std::rc::Rc;
 
 pub struct Memory {
     pub ram: [u8; 0x7ff],
     cartridge: Rc<Cartridge>,
+    ppu: Rc<PPU>
 }
 impl Memory {
-    pub fn new(cartridge: Rc<Cartridge>) -> Self {
+    pub fn new(cartridge: Rc<Cartridge>, ppu: Rc<PPU>) -> Self {
         Self {
             ram: [0; 0x7ff],
             cartridge,
+            ppu
         }
     }
     pub fn cpu_write(&mut self, address: u16, data: u8) -> bool {
@@ -22,16 +24,25 @@ impl Memory {
         } else if address < 0x2000 {
             self.ram[(address & 0x7ff) as usize] = data;
             true
+        } else if address <= 0x3fff && address >= 0x2000 {
+            
+                Rc::get_mut(&mut self.ppu).unwrap()
+            .cpu_write(address & 0x7, data);
+            true
         } else {
             eprintln!("ERROR: Unmapped memory!");
             false
         }
     }
-    pub fn cpu_read(&self, address: u16) -> Option<u8> {
+    pub fn cpu_read(&mut self, address: u16) -> Option<u8> {
         if let Some(value) = self.cartridge.cpu_read(address) {
             Some(value)
         } else if address < 0x2000 {
             Some(self.ram[(address & 0x7ff) as usize])
+        } else if address <= 0x3fff && address >= 0x2000 {
+            Some(
+                Rc::get_mut(&mut self.ppu).unwrap()
+            .cpu_read(address & 0x7))
         } else {
             eprintln!("ERROR: Reading Unmapped memory!");
             None

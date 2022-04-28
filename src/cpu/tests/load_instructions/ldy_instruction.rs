@@ -1,6 +1,6 @@
 use std::rc::Rc;
 
-use crate::{CPU, cartridge::Cartridge, memory::Memory};
+use crate::{CPU, cartridge::Cartridge, memory::Memory, ppu::PPU};
 #[test]
 fn immediate() {
     let mut rom = [0u8; 0x7fff];
@@ -11,8 +11,8 @@ fn immediate() {
     rom[1] = 0x10;
 
 
-    let cartridge = Cartridge::from_rom(rom.to_vec());
-    let memory = Memory::new(Rc::new(cartridge));
+    let cartridge = Rc::new(Cartridge::from_rom(rom.to_vec()));
+    let memory = Memory::new(cartridge.clone(), Rc::new(PPU::new(cartridge.clone())));
     let mut cpu = CPU::new(Rc::new(memory));
     cpu.init();
     cpu.exec();
@@ -29,8 +29,8 @@ fn zero_page() {
     rom[1] = 0x10;
 
 
-    let cartridge = Cartridge::from_rom(rom.to_vec());
-    let memory = Memory::new(Rc::new(cartridge));
+    let cartridge = Rc::new(Cartridge::from_rom(rom.to_vec()));
+    let memory = Memory::new(cartridge.clone(), Rc::new(PPU::new(cartridge.clone())));
     let mut cpu = CPU::new(Rc::new(memory));
     cpu.write(0x10, 0x4);
     cpu.init();
@@ -48,8 +48,8 @@ fn zero_page_x() {
     rom[1] = 0x10;
 
 
-    let cartridge = Cartridge::from_rom(rom.to_vec());
-    let memory = Memory::new(Rc::new(cartridge));
+    let cartridge = Rc::new(Cartridge::from_rom(rom.to_vec()));
+    let memory = Memory::new(cartridge.clone(), Rc::new(PPU::new(cartridge.clone())));
     let mut cpu = CPU::new(Rc::new(memory));
     cpu.registers.x = 2;
     cpu.write(0x12, 0x4);
@@ -69,8 +69,8 @@ fn abs() {
     rom[2] = 0x10;
 
 
-    let cartridge = Cartridge::from_rom(rom.to_vec());
-    let memory = Memory::new(Rc::new(cartridge));
+    let cartridge = Rc::new(Cartridge::from_rom(rom.to_vec()));
+    let memory = Memory::new(cartridge.clone(), Rc::new(PPU::new(cartridge.clone())));
     let mut cpu = CPU::new(Rc::new(memory));
     cpu.write(0x1000, 0x4);
     cpu.init();
@@ -89,8 +89,8 @@ fn abs_x() {
     rom[2] = 0x10;
 
 
-    let cartridge = Cartridge::from_rom(rom.to_vec());
-    let memory = Memory::new(Rc::new(cartridge));
+    let cartridge = Rc::new(Cartridge::from_rom(rom.to_vec()));
+    let memory = Memory::new(cartridge.clone(), Rc::new(PPU::new(cartridge.clone())));
     let mut cpu = CPU::new(Rc::new(memory));
     cpu.registers.x = 2;
     cpu.write(0x1002, 0x4);

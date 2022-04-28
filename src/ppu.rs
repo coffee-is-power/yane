@@ -152,6 +152,66 @@ impl PPU {
             self.palette_table[(address & 0xF) as usize] = data
         }
     }
+    pub fn cpu_write(&mut self, address: u16, value: u8){
+        match address {
+            0 => { // Control
+                todo!()
+            }
+            1 => { // Mask
+                todo!()
+            }
+            2 => { // Status
+                todo!()
+            }
+            3 => { // OAM Address
+                todo!()
+            }
+            4 => { // OAM Data
+                todo!()
+            }
+            5 => { // Scroll
+                todo!()
+            }
+            6 => { // PPU Address
+                todo!()
+            }
+            7 => { // PPU Data
+                todo!()
+            }
+            _ => panic!("Unreachable: The cpu read address must be mirrored")
+        }
+    }
+    pub fn cpu_read(&mut self, address: u16) -> u8{
+        
+        match address {
+            0 => { // Control
+                todo!()
+            }
+            1 => { // Mask
+                todo!()
+            }
+            2 => { // Status
+                todo!()
+            }
+            3 => { // OAM Address
+                todo!()
+            }
+            4 => { // OAM Data
+                todo!()
+            }
+            5 => { // Scroll
+                todo!()
+            }
+            6 => { // PPU Address
+                todo!()
+            }
+            7 => { // PPU Data
+                todo!()
+            }
+            _ => panic!("Unreachable: The cpu read address must be mirrored")
+        }
+    }
+
     pub fn run(&mut self) {
         if self.cycle == 1 {
             /*self.screen[self.scanline as usize][(self.cycle - 1) as usize] = Color {

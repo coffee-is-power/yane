@@ -1,6 +1,6 @@
 use std::rc::Rc;
 
-use crate::{CPU, cartridge::Cartridge, memory::Memory};
+use crate::{CPU, cartridge::Cartridge, memory::Memory, ppu::PPU};
 
 #[test]
 fn bit_zp() {
@@ -11,9 +11,9 @@ fn bit_zp() {
     rom[0] = 0x24;
     rom[1] = 0x10;
 
-
-    let cartridge = Cartridge::from_rom(rom.to_vec());
-    let memory = Memory::new(Rc::new(cartridge));
+    
+    let cartridge = Rc::new(Cartridge::from_rom(rom.to_vec()));
+    let memory = Memory::new(cartridge.clone(), Rc::new(PPU::new(cartridge.clone())));
     let mut cpu = CPU::new(Rc::new(memory));
     cpu.registers.a = 0xF;
     cpu.write(0x0010, 0b11000000);
@@ -36,8 +36,8 @@ fn bit_abs() {
     rom[2] = 0x10;
 
 
-    let cartridge = Cartridge::from_rom(rom.to_vec());
-    let memory = Memory::new(Rc::new(cartridge));
+    let cartridge = Rc::new(Cartridge::from_rom(rom.to_vec()));
+    let memory = Memory::new(cartridge.clone(), Rc::new(PPU::new(cartridge.clone())));
     let mut cpu = CPU::new(Rc::new(memory));
     cpu.registers.a = 0xF;
     cpu.write(0x1010, 0b11000000);

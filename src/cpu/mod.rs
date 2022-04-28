@@ -2,7 +2,6 @@ pub mod registers;
 #[cfg(test)]
 mod tests;
 
-use crate::cartridge::Cartridge;
 use crate::memory::Memory;
 use registers::Registers;
 use std::rc::Rc;
@@ -42,14 +41,15 @@ impl CPU {
             self.exec();
         }
     }
-    pub fn read_u16(&self, addr: u16) -> u16 {
+    pub fn read_u16(&mut self, addr: u16) -> u16 {
         self.read(addr) as u16 | ((self.read(addr + 1) as u16) << 8)
     }
     fn get_operand_address(&mut self, mode: AddressingMode) -> u16 {
         match mode {
             AddressingMode::Indirect => {
                 self.registers.program_counter += 2;
-                self.read_u16(self.read_u16(self.registers.program_counter - 2))
+                let ptr_to_ptr = self.read_u16(self.registers.program_counter - 2);
+                self.read_u16(ptr_to_ptr)
             }
             AddressingMode::Immediate => {
                 self.registers.program_counter += 1;
@@ -123,8 +123,9 @@ impl CPU {
             .unwrap()
             .cpu_write(address, data);
     }
-    pub fn read(&self, address: u16) -> u8 {
-        let r = self.memory.cpu_read(address).or_else(|| Some(0)).unwrap();
+    pub fn read(&mut self, address: u16) -> u8 {
+        let r = Rc::get_mut(&mut self.memory)
+        .unwrap().cpu_read(address).or_else(|| Some(0)).unwrap();
         println!("Read Address {:#02x}: {:#02x}", address, r);
         r
     }

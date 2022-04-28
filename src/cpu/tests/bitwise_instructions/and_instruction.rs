@@ -1,6 +1,6 @@
 use std::rc::Rc;
 
-use crate::{CPU, cartridge::Cartridge, memory::Memory};
+use crate::{CPU, cartridge::Cartridge, memory::Memory, ppu::PPU};
 #[test]
 fn immediate_instruction() {
     let mut rom = [0u8; 0x7fff];
@@ -12,8 +12,8 @@ fn immediate_instruction() {
     rom[2] = 0x29;
     rom[3] = 7;
 
-    let cartridge = Cartridge::from_rom(rom.to_vec());
-    let memory = Memory::new(Rc::new(cartridge));
+    let cartridge = Rc::new(Cartridge::from_rom(rom.to_vec()));
+    let memory = Memory::new(cartridge.clone(), Rc::new(PPU::new(cartridge.clone())));
     let mut cpu = CPU::new(Rc::new(memory));
     cpu.init();
     cpu.exec();
@@ -33,8 +33,8 @@ fn zeropage() {
     rom[3] = 61;
 
 
-    let cartridge = Cartridge::from_rom(rom.to_vec());
-    let memory = Memory::new(Rc::new(cartridge));
+    let cartridge = Rc::new(Cartridge::from_rom(rom.to_vec()));
+    let memory = Memory::new(cartridge.clone(), Rc::new(PPU::new(cartridge.clone())));
     let mut cpu = CPU::new(Rc::new(memory));
     cpu.write(61, 7);
     cpu.init();
@@ -55,8 +55,8 @@ fn zeropage_x() {
     rom[3] = 61;
 
 
-    let cartridge = Cartridge::from_rom(rom.to_vec());
-    let memory = Memory::new(Rc::new(cartridge));
+    let cartridge = Rc::new(Cartridge::from_rom(rom.to_vec()));
+    let memory = Memory::new(cartridge.clone(), Rc::new(PPU::new(cartridge.clone())));
     let mut cpu = CPU::new(Rc::new(memory));
     cpu.registers.x = 1;
     cpu.write(62, 7);
@@ -80,8 +80,8 @@ fn abs() {
     rom[4] = 0x10;
 
 
-    let cartridge = Cartridge::from_rom(rom.to_vec());
-    let memory = Memory::new(Rc::new(cartridge));
+    let cartridge = Rc::new(Cartridge::from_rom(rom.to_vec()));
+    let memory = Memory::new(cartridge.clone(), Rc::new(PPU::new(cartridge.clone())));
     let mut cpu = CPU::new(Rc::new(memory));
     cpu.write(0x1010, 7);
     cpu.init();
@@ -104,8 +104,8 @@ fn abs_x() {
     rom[4] = 0x10;
 
 
-    let cartridge = Cartridge::from_rom(rom.to_vec());
-    let memory = Memory::new(Rc::new(cartridge));
+    let cartridge = Rc::new(Cartridge::from_rom(rom.to_vec()));
+    let memory = Memory::new(cartridge.clone(), Rc::new(PPU::new(cartridge.clone())));
     let mut cpu = CPU::new(Rc::new(memory));
     cpu.registers.x = 1;
     cpu.write(0x1011, 7);
@@ -129,8 +129,8 @@ fn abs_y() {
     rom[4] = 0x10;
 
 
-    let cartridge = Cartridge::from_rom(rom.to_vec());
-    let memory = Memory::new(Rc::new(cartridge));
+    let cartridge = Rc::new(Cartridge::from_rom(rom.to_vec()));
+    let memory = Memory::new(cartridge.clone(), Rc::new(PPU::new(cartridge.clone())));
     let mut cpu = CPU::new(Rc::new(memory));
     cpu.registers.y = 1;
     cpu.write(0x1011, 7);
@@ -153,8 +153,8 @@ fn indirect_y() {
     rom[3] = 0x11;
 
 
-    let cartridge = Cartridge::from_rom(rom.to_vec());
-    let memory = Memory::new(Rc::new(cartridge));
+    let cartridge = Rc::new(Cartridge::from_rom(rom.to_vec()));
+    let memory = Memory::new(cartridge.clone(), Rc::new(PPU::new(cartridge.clone())));
     let mut cpu = CPU::new(Rc::new(memory));
     cpu.registers.y = 1;
     cpu.write(0x11, 0x11);
@@ -179,8 +179,8 @@ fn indirect_x() {
     rom[3] = 0x11;
 
 
-    let cartridge = Cartridge::from_rom(rom.to_vec());
-    let memory = Memory::new(Rc::new(cartridge));
+    let cartridge = Rc::new(Cartridge::from_rom(rom.to_vec()));
+    let memory = Memory::new(cartridge.clone(), Rc::new(PPU::new(cartridge.clone())));
     let mut cpu = CPU::new(Rc::new(memory));
     cpu.registers.x = 1;
     cpu.write(0x12, 0x11);

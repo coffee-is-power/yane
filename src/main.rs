@@ -1,5 +1,4 @@
-extern crate core;
-
+#![feature(get_mut_unchecked)]
 mod cartridge;
 mod cpu;
 mod mapper;
@@ -19,18 +18,22 @@ use std::rc::Rc;
 
 fn main() {
     let cartridge = Rc::new(get_cartridge());
-
-    let memory = Rc::new(Memory::new(cartridge.clone()));
-    let mut cpu = CPU::new(Rc::clone(&memory));
-    let mut ppu = PPU::new(cartridge.clone());
+    
+    let mut ppu_rc = Rc::new(PPU::new(cartridge.clone()));
+    let ppu =unsafe{ Rc::get_mut_unchecked(&mut ppu_rc)};
+    let clone_ppu = || {
+        unsafe{Rc::from_raw(ppu)}
+    };
+    let memory = Memory::new(Rc::clone(&cartridge), clone_ppu());
+    let mut cpu = CPU::new(Rc::new(memory));
     let mut clock_counter = 0;
     let (mut rl, rl_thread) = init_raylib();
     cpu.init();
     while !rl.window_should_close() {
-        clock_counter = clock(clock_counter, &mut cpu, &mut ppu);
+        clock_counter = clock(clock_counter, &mut cpu, ppu);
         let mut d = rl.begin_drawing(&rl_thread);
-        draw_chr_memory(&mut d, 0, 1, 0, 0, &ppu);
-        draw_chr_memory(&mut d, 1, 1, 128, 0, &ppu);
+        draw_chr_memory(&mut d, 0, 1, 0, 0, ppu);
+        draw_chr_memory(&mut d, 1, 1, 128, 0, ppu);
         
     }
 }

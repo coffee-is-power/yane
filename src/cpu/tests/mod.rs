@@ -8,9 +8,9 @@ mod stack;
 mod subroutines;
 mod transfer_instructions;
 
-use std::rc::Rc;
+use std::{rc::Rc};
 
-use crate::{CPU, cartridge::Cartridge, memory::Memory};
+use crate::{CPU, cartridge::Cartridge, memory::Memory, ppu::PPU};
 
 #[test]
 fn init_cpu_sets_correct_pc() {
@@ -20,8 +20,8 @@ fn init_cpu_sets_correct_pc() {
     rom[0x3FFD] = 0x80;
 
 
-    let cartridge = Cartridge::from_rom(rom.to_vec());
-    let memory = Memory::new(Rc::new(cartridge));
+    let cartridge = Rc::new(Cartridge::from_rom(rom.to_vec()));
+    let memory = Memory::new(cartridge.clone(), Rc::new(PPU::new(cartridge.clone())));
     let mut cpu = CPU::new(Rc::new(memory));
     cpu.init();
     assert_eq!(
@@ -31,8 +31,8 @@ fn init_cpu_sets_correct_pc() {
 }
 #[test]
 fn ram_write_test() {
-    let cartridge = Cartridge::from_rom(vec![]);
-    let memory = Memory::new(Rc::new(cartridge));
+    let cartridge = Rc::new(Cartridge::from_rom(vec![]));
+    let memory = Memory::new(cartridge.clone(), Rc::new(PPU::new(cartridge.clone())));
     let mut cpu = CPU::new(Rc::new(memory));
     cpu.write(4, 10);
     assert_eq!(
@@ -43,8 +43,8 @@ fn ram_write_test() {
 
 #[test]
 fn ram_read_test() {
-    let cartridge = Cartridge::from_rom(vec![]);
-    let memory = Memory::new(Rc::new(cartridge));
+    let cartridge = Rc::new(Cartridge::from_rom(vec![]));
+    let memory = Memory::new(cartridge.clone(), Rc::new(PPU::new(cartridge.clone())));
     let mut cpu = CPU::new(Rc::new(memory));
     Rc::get_mut(&mut cpu.memory).unwrap().ram[4] = 10;
     assert_eq!(
@@ -59,8 +59,8 @@ fn read_u16_test() {
 
     rom[(0xFFFC - 0x8000) & 0x3fff] = 0x00;
     rom[(0xFFFD - 0x8000) & 0x3fff] = 0x80;
-    let cartridge = Cartridge::from_rom(rom.to_vec());
-    let memory = Memory::new(Rc::new(cartridge));
+    let cartridge = Rc::new(Cartridge::from_rom(rom.to_vec()));
+    let memory = Memory::new(cartridge.clone(), Rc::new(PPU::new(cartridge.clone())));
     let mut cpu = CPU::new(Rc::new(memory));
     assert_eq!(cpu.read_u16(0xFFFC), 0x8000)
 }

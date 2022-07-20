@@ -848,6 +848,14 @@ impl CPU {
                 self.rti();
                 self.remaining_cycles = 6;
             }
+            // Stub CLD implementation
+            0xD8 => {
+                self.remaining_cycles = 2;
+            }
+            // Stub SED implementation
+            0xF8 => {
+                self.remaining_cycles = 2;
+            }
             _ => {
                 eprintln!("{:#02x} opcode is not implemented or illegal!", instruction)
             }
@@ -1166,25 +1174,26 @@ impl CPU {
     fn bcc(&mut self) {
         if !self.registers.carry {
             let value = self.read(self.registers.program_counter);
-
             let old_pc = self.registers.program_counter - 1;
             if value > 0x7F {
                 self.registers.program_counter -= (!value + 1) as u16;
             } else {
                 self.registers.program_counter += value as u16;
             }
+            
             println!(
                 "Jumped from {} to {}",
                 old_pc,
                 self.registers.program_counter + 1
             );
         }
+        self.registers.program_counter = self.registers.program_counter.wrapping_add(1);
     }
 
     fn bcs(&mut self) {
         if self.registers.carry {
             let value = self.read(self.registers.program_counter);
-
+            
             let old_pc = self.registers.program_counter - 1;
             if value > 0x7F {
                 self.registers.program_counter -= (!value + 1) as u16;
@@ -1196,11 +1205,12 @@ impl CPU {
                 old_pc, self.registers.program_counter
             );
         }
+        self.registers.program_counter = self.registers.program_counter.wrapping_add(1);
     }
     fn bvc(&mut self) {
         if !self.registers.overflow {
             let value = self.read(self.registers.program_counter);
-
+            
             let old_pc = self.registers.program_counter - 1;
             if value > 0x7F {
                 self.registers.program_counter -= (!value + 1) as u16;
@@ -1212,11 +1222,12 @@ impl CPU {
                 old_pc, self.registers.program_counter
             );
         }
+        self.registers.program_counter = self.registers.program_counter.wrapping_add(1);
     }
     fn bvs(&mut self) {
         if self.registers.overflow {
             let value = self.read(self.registers.program_counter);
-
+            
             let old_pc = self.registers.program_counter - 1;
             if value > 0x7F {
                 self.registers.program_counter -= (!value + 1) as u16;
@@ -1228,12 +1239,13 @@ impl CPU {
                 old_pc, self.registers.program_counter
             );
         }
+        self.registers.program_counter = self.registers.program_counter.wrapping_add(1);
     }
 
     fn beq(&mut self) {
         if self.registers.zero {
             let value = self.read(self.registers.program_counter);
-
+            
             let old_pc = self.registers.program_counter - 1;
             if value > 0x7F {
                 self.registers.program_counter -= (!value + 1) as u16;
@@ -1245,6 +1257,7 @@ impl CPU {
                 old_pc, self.registers.program_counter
             );
         }
+        self.registers.program_counter = self.registers.program_counter.wrapping_add(1);
     }
 
     fn bne(&mut self) {
@@ -1262,6 +1275,7 @@ impl CPU {
                 old_pc, self.registers.program_counter
             );
         }
+        self.registers.program_counter = self.registers.program_counter.wrapping_add(1);
     }
     fn bmi(&mut self) {
         if self.registers.negative {
@@ -1278,19 +1292,20 @@ impl CPU {
                 old_pc, self.registers.program_counter
             );
         }
+        self.registers.program_counter = self.registers.program_counter.wrapping_add(1);
     }
     fn bpl(&mut self) {
         if !self.registers.negative {
             let value = self.read(self.registers.program_counter);
-
-            self.registers.program_counter += 1;
+            // Jump to relative address, it can be negative
             if value > 0x7F {
-                self.registers.program_counter -= ((!value) + 1) as u16;
+                self.registers.program_counter -= (!value + 1) as u16;
             } else {
                 self.registers.program_counter += value as u16;
             }
             println!("Jumped");
         }
+        self.registers.program_counter = self.registers.program_counter.wrapping_add(1);
     }
 
     /**

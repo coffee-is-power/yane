@@ -191,7 +191,7 @@ impl PPU {
                 todo!()
             }
             2 => { // Status
-                todo!()
+                return 0x80;
             }
             3 => { // OAM Address
                 todo!()

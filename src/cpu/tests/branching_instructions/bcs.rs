@@ -17,7 +17,7 @@ fn bcs_jumps_when_carry_is_true() {
     cpu.init();
     cpu.registers.carry = true;
     cpu.exec();
-    assert_eq!(cpu.registers.program_counter, 0x8005);
+    assert_eq!(cpu.registers.program_counter, 0x8002+4);
 }
 
 #[test]
@@ -35,5 +35,5 @@ fn bcs_does_not_jump_when_carry_is_false() {
     cpu.init();
     cpu.registers.carry = false;
     cpu.exec();
-    assert_eq!(cpu.registers.program_counter, 0x8001);
+    assert_eq!(cpu.registers.program_counter, 0x8002);
 }

@@ -17,7 +17,7 @@ fn beq_jumps_when_zero_is_true() {
     cpu.init();
     cpu.registers.zero = true;
     cpu.exec();
-    assert_eq!(cpu.registers.program_counter, 0x8005);
+    assert_eq!(cpu.registers.program_counter, 0x8006);
 }
 
 #[test]
@@ -35,5 +35,5 @@ fn beq_does_not_jump_when_zero_is_false() {
     cpu.init();
     cpu.registers.zero = false;
     cpu.exec();
-    assert_eq!(cpu.registers.program_counter, 0x8001);
+    assert_eq!(cpu.registers.program_counter, 0x8002);
 }

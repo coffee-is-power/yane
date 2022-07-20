@@ -17,7 +17,7 @@ fn bmi_jumps_when_negative_is_true() {
     cpu.init();
     cpu.registers.negative = true;
     cpu.exec();
-    assert_eq!(cpu.registers.program_counter, 0x8005);
+    assert_eq!(cpu.registers.program_counter, 0x8002+4);
 }
 
 #[test]
@@ -35,5 +35,5 @@ fn bmi_does_not_jump_when_negative_is_false() {
     cpu.init();
     cpu.registers.negative = false;
     cpu.exec();
-    assert_eq!(cpu.registers.program_counter, 0x8001);
+    assert_eq!(cpu.registers.program_counter, 0x8002);
 }

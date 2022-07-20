@@ -21,14 +21,14 @@ fn main() {
     let memory = Memory::new(cartridge.clone(), ppu.clone());
     let mut cpu = CPU::new(Rc::new(memory));
     let mut clock_counter = 0;
-    let (mut rl, rl_thread) = init_raylib();
+    // let (mut rl, rl_thread) = init_raylib();
     cpu.init();
-    while !rl.window_should_close() {
+    loop {
         clock_counter = clock(clock_counter, &mut cpu, ppu.clone());
-        let mut d = rl.begin_drawing(&rl_thread);
+        //let mut d = rl.begin_drawing(&rl_thread);
         let ppu = ppu.lock().unwrap();
-        draw_chr_memory(&mut d, 0, 1, 0, 0, &ppu);
-        draw_chr_memory(&mut d, 1, 1, 128, 0, &ppu);
+        //draw_chr_memory(&mut d, 0, 1, 0, 0, &ppu);
+        //draw_chr_memory(&mut d, 1, 1, 128, 0, &ppu);
     }
 }
 fn draw_chr_memory(d: &mut RaylibDrawHandle, i: u8, palette: u8, offset_x: i32, offset_y: i32, ppu: &PPU){

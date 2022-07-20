@@ -1,4 +1,4 @@
-use crate::Cartridge;
+use crate::cartridge::Cartridge;
 use std::{rc::Rc, sync::{Arc, Mutex}};
 
 #[derive(Copy, Clone)]

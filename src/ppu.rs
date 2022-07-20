@@ -1,5 +1,5 @@
 use crate::Cartridge;
-use std::rc::Rc;
+use std::{rc::Rc, sync::{Arc, Mutex}};
 
 #[derive(Copy, Clone)]
 pub struct Color {
@@ -88,10 +88,10 @@ pub struct PPU {
     pub frame_complete: bool,
     scanline: i16,
     cycle: u16,
-    cartridge: Rc<Cartridge>,
+    cartridge: Arc<Mutex<Cartridge>>,
 }
 impl PPU {
-    pub fn new(cartridge: Rc<Cartridge>) -> Self {
+    pub fn new(cartridge: Arc<Mutex<Cartridge>>) -> Self {
         Self {
             cartridge,
             scanline: 0,
@@ -127,7 +127,7 @@ impl PPU {
     }
     pub fn ppu_read(&self, address: u16) -> u8 {
         let address = address & 0x3fff;
-        if let Some(data) = self.cartridge.ppu_read(address) {
+        if let Some(data) = self.cartridge.lock().unwrap().ppu_read(address) {
             data
         } else if address < 0x2000 {
             self.chr_table[((address & 0x1000) >> 12) as usize][(address & 0x0FFF) as usize]
@@ -140,7 +140,7 @@ impl PPU {
 
     pub fn ppu_write(&mut self, address: u16, data: u8) {
         let address = address & 0x3fff;
-        let interested = Rc::get_mut(&mut self.cartridge)
+        let interested = self.cartridge.lock()
             .unwrap()
             .ppu_write(address, data);
         if interested {

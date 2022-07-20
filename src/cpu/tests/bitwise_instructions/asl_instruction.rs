@@ -1,4 +1,4 @@
-use std::rc::Rc;
+use std::{rc::Rc, sync::{Arc, Mutex}};
 
 use crate::{CPU, cartridge::Cartridge, memory::Memory, ppu::PPU};
 #[test]
@@ -10,8 +10,8 @@ fn accumulator() {
     rom[0] = 0x0A;
 
 
-    let cartridge = Rc::new(Cartridge::from_rom(rom.to_vec()));
-    let memory = Memory::new(cartridge.clone(), Rc::new(PPU::new(cartridge.clone())));
+    let cartridge = Arc::new(Mutex::new(Cartridge::from_rom(rom.to_vec())));
+    let memory = Memory::new(cartridge.clone(), Arc::new(Mutex::new(PPU::new(cartridge.clone()))));
     let mut cpu = CPU::new(Rc::new(memory));
     cpu.registers.a = 3;
     cpu.init();
@@ -32,8 +32,8 @@ fn zeropage() {
     rom[1] = 0;
 
 
-    let cartridge = Rc::new(Cartridge::from_rom(rom.to_vec()));
-    let memory = Memory::new(cartridge.clone(), Rc::new(PPU::new(cartridge.clone())));
+    let cartridge = Arc::new(Mutex::new(Cartridge::from_rom(rom.to_vec())));
+    let memory = Memory::new(cartridge.clone(), Arc::new(Mutex::new(PPU::new(cartridge.clone()))));
     let mut cpu = CPU::new(Rc::new(memory));
     Rc::get_mut(&mut cpu.memory).unwrap().ram[0] = 0x3;
     cpu.init();
@@ -54,8 +54,8 @@ fn zeropage_x() {
     rom[1] = 0;
 
 
-    let cartridge = Rc::new(Cartridge::from_rom(rom.to_vec()));
-    let memory = Memory::new(cartridge.clone(), Rc::new(PPU::new(cartridge.clone())));
+    let cartridge = Arc::new(Mutex::new(Cartridge::from_rom(rom.to_vec())));
+    let memory = Memory::new(cartridge.clone(), Arc::new(Mutex::new(PPU::new(cartridge.clone()))));
     let mut cpu = CPU::new(Rc::new(memory));
     Rc::get_mut(&mut cpu.memory).unwrap().ram[1] = 0x3;
     cpu.registers.x = 1;
@@ -78,8 +78,8 @@ fn abs() {
     rom[2] = 0x5;
 
 
-    let cartridge = Rc::new(Cartridge::from_rom(rom.to_vec()));
-    let memory = Memory::new(cartridge.clone(), Rc::new(PPU::new(cartridge.clone())));
+    let cartridge = Arc::new(Mutex::new(Cartridge::from_rom(rom.to_vec())));
+    let memory = Memory::new(cartridge.clone(), Arc::new(Mutex::new(PPU::new(cartridge.clone()))));
     let mut cpu = CPU::new(Rc::new(memory));
     Rc::get_mut(&mut cpu.memory).unwrap().ram[0x511] = 0x3;
     cpu.init();
@@ -101,8 +101,8 @@ fn abs_x() {
     rom[2] = 0x5;
 
 
-    let cartridge = Rc::new(Cartridge::from_rom(rom.to_vec()));
-    let memory = Memory::new(cartridge.clone(), Rc::new(PPU::new(cartridge.clone())));
+    let cartridge = Arc::new(Mutex::new(Cartridge::from_rom(rom.to_vec())));
+    let memory = Memory::new(cartridge.clone(), Arc::new(Mutex::new(PPU::new(cartridge.clone()))));
     let mut cpu = CPU::new(Rc::new(memory));
     Rc::get_mut(&mut cpu.memory).unwrap().ram[0x512] = 0x3;
     cpu.registers.x = 1;

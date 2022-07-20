@@ -1,4 +1,3 @@
-#![feature(get_mut_unchecked)]
 mod cartridge;
 mod cpu;
 mod mapper;
@@ -14,27 +13,22 @@ use raylib::color::Color;
 use raylib::drawing::RaylibDraw;
 use raylib::prelude::RaylibDrawHandle;
 use raylib::{RaylibHandle, RaylibThread};
-use std::rc::Rc;
+use std::{rc::Rc, sync::{Arc, Mutex}};
 
 fn main() {
-    let cartridge = Rc::new(get_cartridge());
-    
-    let mut ppu_rc = Rc::new(PPU::new(cartridge.clone()));
-    let ppu =unsafe{ Rc::get_mut_unchecked(&mut ppu_rc)};
-    let clone_ppu = || {
-        unsafe{Rc::from_raw(ppu)}
-    };
-    let memory = Memory::new(Rc::clone(&cartridge), clone_ppu());
+    let cartridge = Arc::new(Mutex::new(get_cartridge()));
+    let ppu = Arc::new(Mutex::new(PPU::new(cartridge.clone())));
+    let memory = Memory::new(cartridge.clone(), ppu.clone());
     let mut cpu = CPU::new(Rc::new(memory));
     let mut clock_counter = 0;
     let (mut rl, rl_thread) = init_raylib();
     cpu.init();
     while !rl.window_should_close() {
-        clock_counter = clock(clock_counter, &mut cpu, ppu);
+        clock_counter = clock(clock_counter, &mut cpu, ppu.clone());
         let mut d = rl.begin_drawing(&rl_thread);
-        draw_chr_memory(&mut d, 0, 1, 0, 0, ppu);
-        draw_chr_memory(&mut d, 1, 1, 128, 0, ppu);
-        
+        let ppu = ppu.lock().unwrap();
+        draw_chr_memory(&mut d, 0, 1, 0, 0, &ppu);
+        draw_chr_memory(&mut d, 1, 1, 128, 0, &ppu);
     }
 }
 fn draw_chr_memory(d: &mut RaylibDrawHandle, i: u8, palette: u8, offset_x: i32, offset_y: i32, ppu: &PPU){
@@ -46,11 +40,11 @@ fn draw_chr_memory(d: &mut RaylibDrawHandle, i: u8, palette: u8, offset_x: i32, 
             }
         }
 }
-fn clock(clock_counter: u32, cpu: &mut CPU, ppu: &mut PPU) -> u32 {
+fn clock(clock_counter: u32, cpu: &mut CPU, ppu: Arc<Mutex<PPU>>) -> u32 {
     if (clock_counter % 3) == 0 {
         cpu.clock();
     }
-    ppu.run();
+    ppu.lock().unwrap().run();
     clock_counter + 1
 }
 static DEFAULT_ROM: &str = "./test-roms/nestest.nes";

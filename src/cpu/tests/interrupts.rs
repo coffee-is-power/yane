@@ -1,4 +1,4 @@
-use std::rc::Rc;
+use std::{rc::Rc, sync::{Arc, Mutex}};
 
 use crate::{CPU, cartridge::Cartridge, memory::Memory, ppu::PPU};
 
@@ -11,8 +11,8 @@ fn cli_enables_interrupts() {
     rom[0] = 0x58;
 
 
-    let cartridge = Rc::new(Cartridge::from_rom(rom.to_vec()));
-    let memory = Memory::new(cartridge.clone(), Rc::new(PPU::new(cartridge.clone())));
+    let cartridge = Arc::new(Mutex::new(Cartridge::from_rom(rom.to_vec())));
+    let memory = Memory::new(cartridge.clone(), Arc::new(Mutex::new(PPU::new(cartridge.clone()))));
     let mut cpu = CPU::new(Rc::new(memory));
     cpu.init();
     cpu.registers.interrupt_disable = true;
@@ -29,8 +29,8 @@ fn sei_disables_interrupts() {
     rom[0] = 0x78;
 
 
-    let cartridge = Rc::new(Cartridge::from_rom(rom.to_vec()));
-    let memory = Memory::new(cartridge.clone(), Rc::new(PPU::new(cartridge.clone())));
+    let cartridge = Arc::new(Mutex::new(Cartridge::from_rom(rom.to_vec())));
+    let memory = Memory::new(cartridge.clone(), Arc::new(Mutex::new(PPU::new(cartridge.clone()))));
     let mut cpu = CPU::new(Rc::new(memory));
     cpu.init();
     cpu.registers.interrupt_disable = false;

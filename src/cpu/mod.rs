@@ -4,7 +4,7 @@ mod tests;
 
 use crate::memory::Memory;
 use registers::Registers;
-use std::rc::Rc;
+use std::{rc::Rc, sync::{Arc, Mutex}};
 
 #[derive(Debug)]
 pub enum AddressingMode {

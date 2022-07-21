@@ -1,7 +1,7 @@
 use crate::mapper::Mapper;
 use crate::mapper_0::Mapper0;
 use std::fs::File;
-use std::io::Read;
+use std::io::{Read, BufReader};
 
 pub struct Cartridge {
     prg_memory: Vec<u8>,
@@ -9,6 +9,7 @@ pub struct Cartridge {
     mapper: Box<dyn Mapper>,
 }
 #[repr(C, packed)]
+#[derive(Debug)]
 struct INesHeader {
     name: [u8; 4],
     prg_rom_chunks: u8,
@@ -35,30 +36,33 @@ impl Cartridge {
         }
     }
     pub fn from_file(path: &String) -> std::io::Result<Self> {
-        let mut file = File::open(path)?;
-        let mut data = [0u8; std::mem::size_of::<INesHeader>()];
-        file.read_exact(&mut data)?;
-        let header: INesHeader = unsafe { std::mem::transmute_copy(&data) };
+        let file = File::open(path)?;
+        Ok(Self::from_read(Box::new(file)))
+    }
+    pub fn from_read(mut data: Box<dyn Read>) -> Self {
+        let mut header_bytes = [0u8; std::mem::size_of::<INesHeader>()];
+        data.read_exact(&mut header_bytes).unwrap();
+        let header: INesHeader = unsafe { std::mem::transmute_copy(&header_bytes) };
+        
         let mapper_id = ((header.mapper2 >> 4) << 4) | (header.mapper1 >> 4);
         let file_type = 1;
-
+        
         match file_type {
             1 => {
                 let prg_banks = header.prg_rom_chunks;
                 let mut prg_memory = Vec::<u8>::new();
                 prg_memory.resize((prg_banks as u32 * 0x4000) as usize, 0);
-                file.read_exact(prg_memory.as_mut_slice())?;
-
+                data.read_exact(&mut prg_memory).unwrap();
                 let chr_banks = header.chr_rom_chunks;
                 let mut chr_memory = Vec::<u8>::new();
                 chr_memory.resize((chr_banks as u32 * 0x4000) as usize, 0);
-                file.read(chr_memory.as_mut_slice())?;
+                data.read(&mut chr_memory).unwrap();
                 let mapper: Box<dyn Mapper> = get_mapper_by_id(mapper_id, prg_banks, chr_banks);
-                Ok(Self {
+                Self {
                     chr_memory,
                     prg_memory,
                     mapper
-                })
+                }
             }
             _ => panic!("File type {} not supported!", file_type),
         }

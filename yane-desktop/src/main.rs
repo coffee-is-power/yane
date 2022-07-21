@@ -8,8 +8,8 @@ fn main() {
     let memory = Memory::new(cartridge.clone(), ppu.clone());
     let mut cpu = CPU::new(Rc::new(memory));
     let mut clock_counter = 0;
-    let mut window = simple::Window::new("Yane for Desktop", 256, 240);
     cpu.init();
+    let mut window = simple::Window::new("Yane for Desktop", 256, 240);
     while window.next_frame() {
         clock_counter = clock(clock_counter, &mut cpu, ppu.clone());
         let ppu = ppu.lock().unwrap();

@@ -1,5 +1,6 @@
 [workspace]
 members = [
     "yane-core",
-    "yane-desktop"
+    "yane-desktop",
+    "yane-web"
 ]

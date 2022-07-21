@@ -1174,18 +1174,11 @@ impl CPU {
     fn bcc(&mut self) {
         if !self.registers.carry {
             let value = self.read(self.registers.program_counter);
-            let old_pc = self.registers.program_counter - 1;
             if value > 0x7F {
                 self.registers.program_counter -= (!value + 1) as u16;
             } else {
                 self.registers.program_counter += value as u16;
-            }
-            
-            println!(
-                "Jumped from {} to {}",
-                old_pc,
-                self.registers.program_counter + 1
-            );
+            };
         }
         self.registers.program_counter = self.registers.program_counter.wrapping_add(1);
     }
@@ -1194,16 +1187,11 @@ impl CPU {
         if self.registers.carry {
             let value = self.read(self.registers.program_counter);
             
-            let old_pc = self.registers.program_counter - 1;
             if value > 0x7F {
                 self.registers.program_counter -= (!value + 1) as u16;
             } else {
                 self.registers.program_counter += value as u16;
             }
-            println!(
-                "Jumped from {} to {}",
-                old_pc, self.registers.program_counter
-            );
         }
         self.registers.program_counter = self.registers.program_counter.wrapping_add(1);
     }
@@ -1217,10 +1205,6 @@ impl CPU {
             } else {
                 self.registers.program_counter += value as u16;
             }
-            println!(
-                "Jumped from {} to {}",
-                old_pc, self.registers.program_counter
-            );
         }
         self.registers.program_counter = self.registers.program_counter.wrapping_add(1);
     }
@@ -1234,10 +1218,6 @@ impl CPU {
             } else {
                 self.registers.program_counter += value as u16;
             }
-            println!(
-                "Jumped from {} to {}",
-                old_pc, self.registers.program_counter
-            );
         }
         self.registers.program_counter = self.registers.program_counter.wrapping_add(1);
     }
@@ -1252,10 +1232,6 @@ impl CPU {
             } else {
                 self.registers.program_counter += value as u16;
             }
-            println!(
-                "Jumped from {} to {}",
-                old_pc, self.registers.program_counter
-            );
         }
         self.registers.program_counter = self.registers.program_counter.wrapping_add(1);
     }
@@ -1270,10 +1246,6 @@ impl CPU {
             } else {
                 self.registers.program_counter += value as u16;
             }
-            println!(
-                "Jumped from {} to {}",
-                old_pc, self.registers.program_counter
-            );
         }
         self.registers.program_counter = self.registers.program_counter.wrapping_add(1);
     }
@@ -1287,10 +1259,6 @@ impl CPU {
             } else {
                 self.registers.program_counter += value as u16;
             }
-            println!(
-                "Jumped from {} to {}",
-                old_pc, self.registers.program_counter
-            );
         }
         self.registers.program_counter = self.registers.program_counter.wrapping_add(1);
     }
@@ -1303,7 +1271,6 @@ impl CPU {
             } else {
                 self.registers.program_counter += value as u16;
             }
-            println!("Jumped");
         }
         self.registers.program_counter = self.registers.program_counter.wrapping_add(1);
     }

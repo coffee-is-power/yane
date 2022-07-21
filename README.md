@@ -12,13 +12,13 @@ cargo run
 You'll need wasm-pack for this.
 
 #### Install wasm-pack
-```
+```bash
 cargo install wasm-pack
 ```
 
 #### Compile and run server
 
-```
+```bash
 wasm-pack build yane-web --target web
 # I'm using sfz here, but you can use whatever static file serving program you want
 sfz yane-web

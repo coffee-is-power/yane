@@ -1,4 +1,5 @@
-use std::{rc::Rc, sync::{Arc, Mutex}};
+use std::{rc::Rc, cell::RefCell};
+
 
 use crate::{CPU, cartridge::Cartridge, memory::Memory, ppu::PPU};
 
@@ -12,9 +13,10 @@ fn bit_zp() {
     rom[1] = 0x10;
 
     
-    let cartridge = Arc::new(Mutex::new(Cartridge::from_rom(rom.to_vec())));
-    let memory = Memory::new(cartridge.clone(), Arc::new(Mutex::new(PPU::new(cartridge.clone()))));
-    let mut cpu = CPU::new(Rc::new(memory));
+    let cartridge = Rc::new(RefCell::new(Cartridge::from_rom(rom.to_vec())));
+    let ppu = Rc::new(RefCell::new(PPU::new(&cartridge)));
+    let memory = Memory::new(&cartridge, &ppu);
+    let mut cpu = CPU::new(memory);
     cpu.registers.a = 0xF;
     cpu.write(0x0010, 0b11000000);
     cpu.init();
@@ -36,9 +38,10 @@ fn bit_abs() {
     rom[2] = 0x10;
 
 
-    let cartridge = Arc::new(Mutex::new(Cartridge::from_rom(rom.to_vec())));
-    let memory = Memory::new(cartridge.clone(), Arc::new(Mutex::new(PPU::new(cartridge.clone()))));
-    let mut cpu = CPU::new(Rc::new(memory));
+    let cartridge = Rc::new(RefCell::new(Cartridge::from_rom(rom.to_vec())));
+    let ppu = Rc::new(RefCell::new(PPU::new(&cartridge)));
+    let memory = Memory::new(&cartridge, &ppu);
+    let mut cpu = CPU::new(memory);
     cpu.registers.a = 0xF;
     cpu.write(0x1010, 0b11000000);
     cpu.init();

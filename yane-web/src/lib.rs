@@ -27,8 +27,8 @@ pub fn start(){
         .unwrap()
         .dyn_into::<web_sys::CanvasRenderingContext2d>()
         .unwrap();
-    let cartridge = Arc::new(Mutex::new(get_cartridge()));
-    let ppu = Arc::new(Mutex::new(PPU::new(cartridge.clone())));
+    let cartridge = Rc::new(RefCell::new(get_cartridge()));
+    let ppu = Rc::new(RefCell::new(PPU::new(cartridge.clone())));
     let memory = Memory::new(cartridge.clone(), ppu.clone());
     let mut cpu = CPU::new(Rc::new(memory));
     let mut clock_counter = 0;
@@ -66,7 +66,7 @@ fn draw_chr_memory(window: &CanvasRenderingContext2d, i: u8, palette: u8, offset
             }
         }
 }
-fn clock(clock_counter: u32, cpu: &mut CPU, ppu: Arc<Mutex<PPU>>) -> u32 {
+fn clock(clock_counter: u32, cpu: &mut CPU, ppu: Rc<RefCell<PPU>>) -> u32 {
     if (clock_counter % 3) == 0 {
         cpu.clock();
     }

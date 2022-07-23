@@ -1,4 +1,4 @@
-use std::{rc::Rc, sync::{Arc, Mutex}};
+use std::{rc::Rc, cell::RefCell};
 
 use crate::{CPU, cartridge::Cartridge, memory::Memory, ppu::PPU};
 #[test]
@@ -10,9 +10,10 @@ fn accumulator() {
     rom[0] = 0x0A;
 
 
-    let cartridge = Arc::new(Mutex::new(Cartridge::from_rom(rom.to_vec())));
-    let memory = Memory::new(cartridge.clone(), Arc::new(Mutex::new(PPU::new(cartridge.clone()))));
-    let mut cpu = CPU::new(Rc::new(memory));
+    let cartridge = Rc::new(RefCell::new(Cartridge::from_rom(rom.to_vec())));
+    let ppu = Rc::new(RefCell::new(PPU::new(&cartridge)));
+    let memory = Memory::new(&cartridge, &ppu);
+    let mut cpu = CPU::new(memory);
     cpu.registers.a = 3;
     cpu.init();
     cpu.exec();
@@ -32,9 +33,10 @@ fn zeropage() {
     rom[1] = 0;
 
 
-    let cartridge = Arc::new(Mutex::new(Cartridge::from_rom(rom.to_vec())));
-    let memory = Memory::new(cartridge.clone(), Arc::new(Mutex::new(PPU::new(cartridge.clone()))));
-    let mut cpu = CPU::new(Rc::new(memory));
+    let cartridge = Rc::new(RefCell::new(Cartridge::from_rom(rom.to_vec())));
+    let ppu = Rc::new(RefCell::new(PPU::new(&cartridge)));
+    let memory = Memory::new(&cartridge, &ppu);
+    let mut cpu = CPU::new(memory);
     Rc::get_mut(&mut cpu.memory).unwrap().ram[0] = 0x3;
     cpu.init();
     cpu.exec();
@@ -54,9 +56,10 @@ fn zeropage_x() {
     rom[1] = 0;
 
 
-    let cartridge = Arc::new(Mutex::new(Cartridge::from_rom(rom.to_vec())));
-    let memory = Memory::new(cartridge.clone(), Arc::new(Mutex::new(PPU::new(cartridge.clone()))));
-    let mut cpu = CPU::new(Rc::new(memory));
+    let cartridge = Rc::new(RefCell::new(Cartridge::from_rom(rom.to_vec())));
+    let ppu = Rc::new(RefCell::new(PPU::new(&cartridge)));
+    let memory = Memory::new(&cartridge, &ppu);
+    let mut cpu = CPU::new(memory);
     Rc::get_mut(&mut cpu.memory).unwrap().ram[1] = 0x3;
     cpu.registers.x = 1;
     cpu.init();
@@ -78,9 +81,10 @@ fn abs() {
     rom[2] = 0x5;
 
 
-    let cartridge = Arc::new(Mutex::new(Cartridge::from_rom(rom.to_vec())));
-    let memory = Memory::new(cartridge.clone(), Arc::new(Mutex::new(PPU::new(cartridge.clone()))));
-    let mut cpu = CPU::new(Rc::new(memory));
+    let cartridge = Rc::new(RefCell::new(Cartridge::from_rom(rom.to_vec())));
+    let ppu = Rc::new(RefCell::new(PPU::new(&cartridge)));
+    let memory = Memory::new(&cartridge, &ppu);
+    let mut cpu = CPU::new(memory);
     Rc::get_mut(&mut cpu.memory).unwrap().ram[0x511] = 0x3;
     cpu.init();
     cpu.exec();
@@ -101,9 +105,10 @@ fn abs_x() {
     rom[2] = 0x5;
 
 
-    let cartridge = Arc::new(Mutex::new(Cartridge::from_rom(rom.to_vec())));
-    let memory = Memory::new(cartridge.clone(), Arc::new(Mutex::new(PPU::new(cartridge.clone()))));
-    let mut cpu = CPU::new(Rc::new(memory));
+    let cartridge = Rc::new(RefCell::new(Cartridge::from_rom(rom.to_vec())));
+    let ppu = Rc::new(RefCell::new(PPU::new(&cartridge)));
+    let memory = Memory::new(&cartridge, &ppu);
+    let mut cpu = CPU::new(memory);
     Rc::get_mut(&mut cpu.memory).unwrap().ram[0x512] = 0x3;
     cpu.registers.x = 1;
     cpu.init();

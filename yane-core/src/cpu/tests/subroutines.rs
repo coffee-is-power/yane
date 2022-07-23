@@ -1,4 +1,5 @@
-use std::{rc::Rc, sync::{Arc, Mutex}};
+use std::{rc::Rc, cell::RefCell};
+
 
 use crate::{CPU, cartridge::Cartridge, memory::Memory, ppu::PPU};
 
@@ -13,9 +14,10 @@ fn jsr() {
     rom[2] = 0x80;
 
 
-    let cartridge = Arc::new(Mutex::new(Cartridge::from_rom(rom.to_vec())));
-    let memory = Memory::new(cartridge.clone(), Arc::new(Mutex::new(PPU::new(cartridge.clone()))));
-    let mut cpu = CPU::new(Rc::new(memory));
+    let cartridge = Rc::new(RefCell::new(Cartridge::from_rom(rom.to_vec())));
+    let ppu = Rc::new(RefCell::new(PPU::new(&cartridge)));
+    let memory = Memory::new(&cartridge, &ppu);
+    let mut cpu = CPU::new(memory);
     cpu.init();
     cpu.exec();
     assert_eq!(cpu.registers.stack_pointer, 0x22);
@@ -38,9 +40,10 @@ fn rts() {
     rom[0x50] = 0x60;
 
 
-    let cartridge = Arc::new(Mutex::new(Cartridge::from_rom(rom.to_vec())));
-    let memory = Memory::new(cartridge.clone(), Arc::new(Mutex::new(PPU::new(cartridge.clone()))));
-    let mut cpu = CPU::new(Rc::new(memory));
+    let cartridge = Rc::new(RefCell::new(Cartridge::from_rom(rom.to_vec())));
+    let ppu = Rc::new(RefCell::new(PPU::new(&cartridge)));
+    let memory = Memory::new(&cartridge, &ppu);
+    let mut cpu = CPU::new(memory);
     cpu.init();
     cpu.exec();
     cpu.exec();

@@ -1,4 +1,5 @@
-use std::{rc::Rc, sync::{Arc, Mutex}};
+use std::{rc::Rc, cell::RefCell};
+
 
 use crate::{CPU, cartridge::Cartridge, memory::Memory, ppu::PPU};
 
@@ -11,9 +12,10 @@ fn cli_enables_interrupts() {
     rom[0] = 0x58;
 
 
-    let cartridge = Arc::new(Mutex::new(Cartridge::from_rom(rom.to_vec())));
-    let memory = Memory::new(cartridge.clone(), Arc::new(Mutex::new(PPU::new(cartridge.clone()))));
-    let mut cpu = CPU::new(Rc::new(memory));
+    let cartridge = Rc::new(RefCell::new(Cartridge::from_rom(rom.to_vec())));
+    let ppu = Rc::new(RefCell::new(PPU::new(&cartridge)));
+    let memory = Memory::new(&cartridge, &ppu);
+    let mut cpu = CPU::new(memory);
     cpu.init();
     cpu.registers.interrupt_disable = true;
     cpu.exec();
@@ -29,9 +31,10 @@ fn sei_disables_interrupts() {
     rom[0] = 0x78;
 
 
-    let cartridge = Arc::new(Mutex::new(Cartridge::from_rom(rom.to_vec())));
-    let memory = Memory::new(cartridge.clone(), Arc::new(Mutex::new(PPU::new(cartridge.clone()))));
-    let mut cpu = CPU::new(Rc::new(memory));
+    let cartridge = Rc::new(RefCell::new(Cartridge::from_rom(rom.to_vec())));
+    let ppu = Rc::new(RefCell::new(PPU::new(&cartridge)));
+    let memory = Memory::new(&cartridge, &ppu);
+    let mut cpu = CPU::new(memory);
     cpu.init();
     cpu.registers.interrupt_disable = false;
     cpu.exec();

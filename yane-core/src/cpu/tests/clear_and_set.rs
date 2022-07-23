@@ -1,4 +1,5 @@
-use std::{rc::Rc, sync::{Arc, Mutex}};
+use std::{rc::Rc, cell::RefCell};
+
 
 use crate::{CPU, cartridge::Cartridge, memory::Memory, ppu::PPU};
 #[test]
@@ -10,9 +11,10 @@ fn clc() {
     rom[0] = 0x18;
 
 
-    let cartridge = Arc::new(Mutex::new(Cartridge::from_rom(rom.to_vec())));
-    let memory = Memory::new(cartridge.clone(), Arc::new(Mutex::new(PPU::new(cartridge.clone()))));
-    let mut cpu = CPU::new(Rc::new(memory));
+    let cartridge = Rc::new(RefCell::new(Cartridge::from_rom(rom.to_vec())));
+    let ppu = Rc::new(RefCell::new(PPU::new(&cartridge)));
+    let memory = Memory::new(&cartridge, &ppu);
+    let mut cpu = CPU::new(memory);
     cpu.init();
     cpu.registers.carry = true;
     cpu.exec();
@@ -27,9 +29,10 @@ fn sec() {
     rom[0] = 0x38;
 
 
-    let cartridge = Arc::new(Mutex::new(Cartridge::from_rom(rom.to_vec())));
-    let memory = Memory::new(cartridge.clone(), Arc::new(Mutex::new(PPU::new(cartridge.clone()))));
-    let mut cpu = CPU::new(Rc::new(memory));
+    let cartridge = Rc::new(RefCell::new(Cartridge::from_rom(rom.to_vec())));
+    let ppu = Rc::new(RefCell::new(PPU::new(&cartridge)));
+    let memory = Memory::new(&cartridge, &ppu);
+    let mut cpu = CPU::new(memory);
     cpu.init();
     cpu.registers.carry = false;
     cpu.exec();
@@ -44,9 +47,10 @@ fn clv() {
     rom[0] = 0xB8;
 
 
-    let cartridge = Arc::new(Mutex::new(Cartridge::from_rom(rom.to_vec())));
-    let memory = Memory::new(cartridge.clone(), Arc::new(Mutex::new(PPU::new(cartridge.clone()))));
-    let mut cpu = CPU::new(Rc::new(memory));
+    let cartridge = Rc::new(RefCell::new(Cartridge::from_rom(rom.to_vec())));
+    let ppu = Rc::new(RefCell::new(PPU::new(&cartridge)));
+    let memory = Memory::new(&cartridge, &ppu);
+    let mut cpu = CPU::new(memory);
     cpu.init();
     cpu.registers.overflow = true;
     cpu.exec();

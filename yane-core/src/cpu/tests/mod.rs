@@ -8,7 +8,8 @@ mod stack;
 mod subroutines;
 mod transfer_instructions;
 
-use std::{rc::Rc, sync::{Arc, Mutex}};
+use std::{rc::Rc, cell::RefCell};
+
 
 use crate::{CPU, cartridge::Cartridge, memory::Memory, ppu::PPU};
 
@@ -20,9 +21,10 @@ fn init_cpu_sets_correct_pc() {
     rom[0x3FFD] = 0x80;
 
 
-    let cartridge = Arc::new(Mutex::new(Cartridge::from_rom(rom.to_vec())));
-    let memory = Memory::new(cartridge.clone(), Arc::new(Mutex::new(PPU::new(cartridge.clone()))));
-    let mut cpu = CPU::new(Rc::new(memory));
+    let cartridge = Rc::new(RefCell::new(Cartridge::from_rom(rom.to_vec())));
+    let ppu = Rc::new(RefCell::new(PPU::new(&cartridge)));
+    let memory = Memory::new(&cartridge, &ppu);
+    let mut cpu = CPU::new(memory);
     cpu.init();
     assert_eq!(
         cpu.registers.program_counter, 0x8000,
@@ -31,9 +33,10 @@ fn init_cpu_sets_correct_pc() {
 }
 #[test]
 fn ram_write_test() {
-    let cartridge = Arc::new(Mutex::new(Cartridge::from_rom(vec![])));
-    let memory = Memory::new(cartridge.clone(), Arc::new(Mutex::new(PPU::new(cartridge.clone()))));
-    let mut cpu = CPU::new(Rc::new(memory));
+    let cartridge = Rc::new(RefCell::new(Cartridge::from_rom(vec![])));
+    let ppu = Rc::new(RefCell::new(PPU::new(&cartridge)));
+    let memory = Memory::new(&cartridge, &ppu);
+    let mut cpu = CPU::new(memory);
     cpu.write(4, 10);
     assert_eq!(
         Rc::get_mut(&mut cpu.memory).unwrap().ram[4], 10,
@@ -43,9 +46,10 @@ fn ram_write_test() {
 
 #[test]
 fn ram_read_test() {
-    let cartridge = Arc::new(Mutex::new(Cartridge::from_rom(vec![])));
-    let memory = Memory::new(cartridge.clone(), Arc::new(Mutex::new(PPU::new(cartridge.clone()))));
-    let mut cpu = CPU::new(Rc::new(memory));
+    let cartridge = Rc::new(RefCell::new(Cartridge::from_rom(vec![])));
+    let ppu = Rc::new(RefCell::new(PPU::new(&cartridge)));
+    let memory = Memory::new(&cartridge, &ppu);
+    let mut cpu = CPU::new(memory);
     Rc::get_mut(&mut cpu.memory).unwrap().ram[4] = 10;
     assert_eq!(
         cpu.read(4),
@@ -59,8 +63,9 @@ fn read_u16_test() {
 
     rom[(0xFFFC - 0x8000) & 0x3fff] = 0x00;
     rom[(0xFFFD - 0x8000) & 0x3fff] = 0x80;
-    let cartridge = Arc::new(Mutex::new(Cartridge::from_rom(rom.to_vec())));
-    let memory = Memory::new(cartridge.clone(), Arc::new(Mutex::new(PPU::new(cartridge.clone()))));
-    let mut cpu = CPU::new(Rc::new(memory));
+    let cartridge = Rc::new(RefCell::new(Cartridge::from_rom(rom.to_vec())));
+    let ppu = Rc::new(RefCell::new(PPU::new(&cartridge)));
+    let memory = Memory::new(&cartridge, &ppu);
+    let mut cpu = CPU::new(memory);
     assert_eq!(cpu.read_u16(0xFFFC), 0x8000)
 }

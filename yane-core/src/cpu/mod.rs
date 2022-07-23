@@ -4,7 +4,8 @@ mod tests;
 
 use crate::memory::Memory;
 use registers::Registers;
-use std::{rc::Rc, sync::{Arc, Mutex}};
+use std::{rc::Rc, cell::RefCell};
+
 
 #[derive(Debug)]
 pub enum AddressingMode {
@@ -27,10 +28,10 @@ pub struct CPU {
     pub remaining_cycles: u32,
 }
 impl CPU {
-    pub fn new(memory: Rc<Memory>) -> Self {
+    pub fn new(memory: Memory) -> Self {
         Self {
             registers: Registers::new(),
-            memory,
+            memory: Rc::new(memory),
             remaining_cycles: 0,
         }
     }
@@ -126,7 +127,7 @@ impl CPU {
     pub fn read(&mut self, address: u16) -> u8 {
         let r = Rc::get_mut(&mut self.memory)
         .unwrap().cpu_read(address).or_else(|| Some(0)).unwrap();
-        println!("Read Address {:#02x}: {:#02x}", address, r);
+        //println!("Read Address {:#02x}: {:#02x}", address, r);
         r
     }
     /** Executes the next instruction in the program counter */

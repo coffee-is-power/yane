@@ -1,5 +1,9 @@
 use crate::cartridge::Cartridge;
-use std::{rc::Rc, sync::{Arc, Mutex}};
+use std::{
+    cell::RefCell,
+    rc::Rc,
+    sync::{Arc, Mutex},
+};
 
 #[derive(Copy, Clone)]
 pub struct Color {
@@ -86,14 +90,16 @@ pub struct PPU {
     palette_table: [u8; 32],
     chr_table: [[u8; 4096]; 2],
     pub frame_complete: bool,
-    scanline: i16,
+    pub scanline: i16,
     cycle: u16,
-    cartridge: Arc<Mutex<Cartridge>>,
+    cartridge: Rc<RefCell<Cartridge>>,
+    pub status: PPUStatusRegister,
 }
 impl PPU {
-    pub fn new(cartridge: Arc<Mutex<Cartridge>>) -> Self {
+    pub fn new(cartridge: &Rc<RefCell<Cartridge>>) -> Self {
         Self {
-            cartridge,
+            status: PPUStatusRegister::new(),
+            cartridge: cartridge.clone(),
             scanline: 0,
             cycle: 0,
             frame_complete: false,
@@ -127,7 +133,7 @@ impl PPU {
     }
     pub fn ppu_read(&self, address: u16) -> u8 {
         let address = address & 0x3fff;
-        if let Some(data) = self.cartridge.lock().unwrap().ppu_read(address) {
+        if let Some(data) = self.cartridge.borrow_mut().ppu_read(address) {
             data
         } else if address < 0x2000 {
             self.chr_table[((address & 0x1000) >> 12) as usize][(address & 0x0FFF) as usize]
@@ -140,9 +146,7 @@ impl PPU {
 
     pub fn ppu_write(&mut self, address: u16, data: u8) {
         let address = address & 0x3fff;
-        let interested = self.cartridge.lock()
-            .unwrap()
-            .ppu_write(address, data);
+        let interested = self.cartridge.borrow_mut().ppu_write(address, data);
         if interested {
             return;
         }
@@ -152,63 +156,81 @@ impl PPU {
             self.palette_table[(address & 0xF) as usize] = data
         }
     }
-    pub fn cpu_write(&mut self, address: u16, value: u8){
+    pub fn cpu_write(&mut self, address: u16, value: u8) {
         match address {
-            0 => { // Control
+            0 => {
+                // Control
                 todo!()
             }
-            1 => { // Mask
+            1 => {
+                // Mask
                 todo!()
             }
-            2 => { // Status
+            2 => {
+                // Status
                 todo!()
             }
-            3 => { // OAM Address
+            3 => {
+                // OAM Address
                 todo!()
             }
-            4 => { // OAM Data
+            4 => {
+                // OAM Data
                 todo!()
             }
-            5 => { // Scroll
+            5 => {
+                // Scroll
                 todo!()
             }
-            6 => { // PPU Address
+            6 => {
+                // PPU Address
                 todo!()
             }
-            7 => { // PPU Data
+            7 => {
+                // PPU Data
                 todo!()
             }
-            _ => panic!("Unreachable: The cpu read address must be mirrored")
+            _ => panic!("Unreachable: The cpu read address must be mirrored"),
         }
     }
-    pub fn cpu_read(&mut self, address: u16) -> u8{
-        
+    pub fn cpu_read(&mut self, address: u16) -> u8 {
         match address {
-            0 => { // Control
+            0 => {
+                // Control
                 todo!()
             }
-            1 => { // Mask
+            1 => {
+                // Mask
                 todo!()
             }
-            2 => { // Status
-                return 0x80;
+            2 => {
+                return if self.status.vblank { 0x80 } else { 0 };
+                // Status
+                //let result = self.status.get_status_register();
+                //self.status.vblank = false;
+                // return result;
             }
-            3 => { // OAM Address
+            3 => {
+                // OAM Address
                 todo!()
             }
-            4 => { // OAM Data
+            4 => {
+                // OAM Data
                 todo!()
             }
-            5 => { // Scroll
+            5 => {
+                // Scroll
                 todo!()
             }
-            6 => { // PPU Address
+            6 => {
+                // PPU Address
                 todo!()
             }
-            7 => { // PPU Data
+            7 => {
+                // PPU Data
                 todo!()
             }
-            _ => panic!("Unreachable: The cpu read address must be mirrored")
+            _ => panic!("Unreachable: The cpu read address must be mirrored"),
         }
     }
 
@@ -224,10 +246,40 @@ impl PPU {
         if self.cycle >= 341 {
             self.cycle = 0;
             self.scanline += 1;
+            if self.scanline == 240 {
+                self.status.vblank = true;
+            }
             if self.scanline >= 261 {
                 self.scanline = -1;
                 self.frame_complete = true;
+                self.status.vblank = false;
             }
         }
+    }
+}
+pub struct PPUStatusRegister {
+    pub sprite_overflow: bool,
+    pub sprite_zero_hit: bool,
+    pub vblank: bool,
+}
+impl PPUStatusRegister {
+    pub fn new() -> PPUStatusRegister {
+        PPUStatusRegister {
+            sprite_overflow: false,
+            sprite_zero_hit: false,
+            vblank: false,
+        }
+    }
+    pub fn get_status_register(&self) -> u8 {
+        let mut result = 0;
+        result |= (self.sprite_overflow as u8) << 5;
+        result |= (self.sprite_zero_hit as u8) << 6;
+        result |= (self.vblank as u8) << 7;
+        result
+    }
+    pub fn set_status_register(&mut self, value: u8) {
+        self.sprite_overflow = value & (1 << 5) > 0;
+        self.sprite_zero_hit = value & (1 << 6) > 0;
+        self.vblank = value & (1 << 7) > 0;
     }
 }

@@ -1,6 +1,5 @@
 use std::cell::RefCell;
 use std::f64;
-use std::time::Instant;
 use std::{rc::Rc, sync::*};
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;

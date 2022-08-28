@@ -1,6 +1,4 @@
-use std::{rc::Rc, sync::{Arc, Mutex}};
-
-use crate::{CPU, cartridge::Cartridge, memory::Memory, ppu::PPU};
+use crate::CPU;
 
 #[test]
 fn accumulator() {
@@ -10,10 +8,7 @@ fn accumulator() {
     rom[0x3FFD] = 0x80;
     rom[0] = 0x4A;
 
-
-    let cartridge = Arc::new(Mutex::new(Cartridge::from_rom(rom.to_vec())));
-    let memory = Memory::new(cartridge.clone(), Arc::new(Mutex::new(PPU::new(cartridge.clone()))));
-    let mut cpu = CPU::new(Rc::new(memory));
+    let mut cpu = CPU::from_rom(&rom);
     cpu.registers.a = 3;
     cpu.init();
     cpu.exec();
@@ -33,13 +28,11 @@ fn zeropage() {
     rom[1] = 0;
 
 
-    let cartridge = Arc::new(Mutex::new(Cartridge::from_rom(rom.to_vec())));
-    let memory = Memory::new(cartridge.clone(), Arc::new(Mutex::new(PPU::new(cartridge.clone()))));
-    let mut cpu = CPU::new(Rc::new(memory));
-    Rc::get_mut(&mut cpu.memory).unwrap().ram[0] = 0x3;
+    let mut cpu = CPU::from_rom(&rom);
+    cpu.memory.borrow_mut().ram[0] = 0x3;
     cpu.init();
     cpu.exec();
-    assert_eq!(Rc::get_mut(&mut cpu.memory).unwrap().ram[0], 3 >> 1);
+    assert_eq!(cpu.memory.borrow_mut().ram[0], 3 >> 1);
     assert_eq!(cpu.registers.negative, false);
     assert_eq!(cpu.registers.zero, false);
     assert_eq!(cpu.registers.carry, true);
@@ -55,14 +48,12 @@ fn zeropage_x() {
     rom[1] = 0;
 
 
-    let cartridge = Arc::new(Mutex::new(Cartridge::from_rom(rom.to_vec())));
-    let memory = Memory::new(cartridge.clone(), Arc::new(Mutex::new(PPU::new(cartridge.clone()))));
-    let mut cpu = CPU::new(Rc::new(memory));
-    Rc::get_mut(&mut cpu.memory).unwrap().ram[1] = 0x3;
+    let mut cpu = CPU::from_rom(&rom);
+    cpu.memory.borrow_mut().ram[1] = 0x3;
     cpu.registers.x = 1;
     cpu.init();
     cpu.exec();
-    assert_eq!(Rc::get_mut(&mut cpu.memory).unwrap().ram[1], 3 >> 1);
+    assert_eq!(cpu.memory.borrow_mut().ram[1], 3 >> 1);
     assert_eq!(cpu.registers.negative, false);
     assert_eq!(cpu.registers.zero, false);
     assert_eq!(cpu.registers.carry, true);
@@ -79,13 +70,11 @@ fn abs() {
     rom[2] = 0x5;
 
 
-    let cartridge = Arc::new(Mutex::new(Cartridge::from_rom(rom.to_vec())));
-    let memory = Memory::new(cartridge.clone(), Arc::new(Mutex::new(PPU::new(cartridge.clone()))));
-    let mut cpu = CPU::new(Rc::new(memory));
-    Rc::get_mut(&mut cpu.memory).unwrap().ram[0x511] = 0x3;
+    let mut cpu = CPU::from_rom(&rom);
+    cpu.memory.borrow_mut().ram[0x511] = 0x3;
     cpu.init();
     cpu.exec();
-    assert_eq!(Rc::get_mut(&mut cpu.memory).unwrap().ram[0x511], 3 >> 1);
+    assert_eq!(cpu.memory.borrow_mut().ram[0x511], 3 >> 1);
     assert_eq!(cpu.registers.negative, false);
     assert_eq!(cpu.registers.zero, false);
     assert_eq!(cpu.registers.carry, true);
@@ -101,15 +90,12 @@ fn abs_x() {
     rom[1] = 0x11;
     rom[2] = 0x05;
 
-
-    let cartridge = Arc::new(Mutex::new(Cartridge::from_rom(rom.to_vec())));
-    let memory = Memory::new(cartridge.clone(), Arc::new(Mutex::new(PPU::new(cartridge.clone()))));
-    let mut cpu = CPU::new(Rc::new(memory));
-    Rc::get_mut(&mut cpu.memory).unwrap().ram[0x512] = 0x3;
+    let mut cpu = CPU::from_rom(&rom);
+    cpu.memory.borrow_mut().ram[0x512] = 0x3;
     cpu.registers.x = 1;
     cpu.init();
     cpu.exec();
-    assert_eq!(Rc::get_mut(&mut cpu.memory).unwrap().ram[0x512], 3 >> 1);
+    assert_eq!(cpu.memory.borrow_mut().ram[0x512], 3 >> 1);
     assert_eq!(cpu.registers.negative, false);
     assert_eq!(cpu.registers.zero, false);
     assert_eq!(cpu.registers.carry, true);

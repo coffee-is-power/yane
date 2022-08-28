@@ -1,7 +1,4 @@
-use std::{rc::Rc, sync::{Arc, Mutex}};
-
-use crate::{CPU, cartridge::Cartridge, memory::Memory, ppu::PPU};
-#[test]
+use crate::CPU;#[test]
 fn immediate() {
     let mut rom = [0u8; 0x7fff];
 
@@ -13,9 +10,8 @@ fn immediate() {
     rom[3] = 7;
 
 
-    let cartridge = Arc::new(Mutex::new(Cartridge::from_rom(rom.to_vec())));
-    let memory = Memory::new(cartridge.clone(), Arc::new(Mutex::new(PPU::new(cartridge.clone()))));
-    let mut cpu = CPU::new(Rc::new(memory));
+
+    let mut cpu = CPU::from_rom(&rom);
     cpu.init();
     cpu.exec();
     cpu.exec();
@@ -34,9 +30,7 @@ fn zeropage() {
     rom[3] = 61;
 
 
-    let cartridge = Arc::new(Mutex::new(Cartridge::from_rom(rom.to_vec())));
-    let memory = Memory::new(cartridge.clone(), Arc::new(Mutex::new(PPU::new(cartridge.clone()))));
-    let mut cpu = CPU::new(Rc::new(memory));
+    let mut cpu = CPU::from_rom(&rom);
     cpu.write(60, 10);
     cpu.write(61, 7);
     cpu.init();
@@ -56,10 +50,7 @@ fn zeropage_x() {
     rom[2] = 0x75;
     rom[3] = 61;
 
-
-    let cartridge = Arc::new(Mutex::new(Cartridge::from_rom(rom.to_vec())));
-    let memory = Memory::new(cartridge.clone(), Arc::new(Mutex::new(PPU::new(cartridge.clone()))));
-    let mut cpu = CPU::new(Rc::new(memory));
+    let mut cpu = CPU::from_rom(&rom);
     cpu.registers.x = 1;
     cpu.write(61, 10);
     cpu.write(62, 7);
@@ -82,11 +73,7 @@ fn abs() {
     rom[3] = 0x6D;
     rom[4] = 0x11;
     rom[5] = 0x10;
-
-
-    let cartridge = Arc::new(Mutex::new(Cartridge::from_rom(rom.to_vec())));
-    let memory = Memory::new(cartridge.clone(), Arc::new(Mutex::new(PPU::new(cartridge.clone()))));
-    let mut cpu = CPU::new(Rc::new(memory));
+    let mut cpu = CPU::from_rom(&rom);
     cpu.write(0x1010, 10);
     cpu.write(0x1011, 7);
     cpu.init();
@@ -107,11 +94,7 @@ fn abs_x() {
     rom[3] = 0x7D;
     rom[4] = 0x11;
     rom[5] = 0x10;
-
-
-    let cartridge = Arc::new(Mutex::new(Cartridge::from_rom(rom.to_vec())));
-    let memory = Memory::new(cartridge.clone(), Arc::new(Mutex::new(PPU::new(cartridge.clone()))));
-    let mut cpu = CPU::new(Rc::new(memory));
+    let mut cpu = CPU::from_rom(&rom);
     cpu.registers.x = 1;
     cpu.write(0x1011, 10);
     cpu.write(0x1012, 7);
@@ -134,11 +117,7 @@ fn abs_y() {
     rom[3] = 0x79;
     rom[4] = 0x11;
     rom[5] = 0x10;
-
-
-    let cartridge = Arc::new(Mutex::new(Cartridge::from_rom(rom.to_vec())));
-    let memory = Memory::new(cartridge.clone(), Arc::new(Mutex::new(PPU::new(cartridge.clone()))));
-    let mut cpu = CPU::new(Rc::new(memory));
+    let mut cpu = CPU::from_rom(&rom);
     cpu.registers.y = 1;
     cpu.write(0x1011, 10);
     cpu.write(0x1012, 7);
@@ -159,11 +138,7 @@ fn indirect_y() {
 
     rom[2] = 0x71;
     rom[3] = 0x11;
-
-
-    let cartridge = Arc::new(Mutex::new(Cartridge::from_rom(rom.to_vec())));
-    let memory = Memory::new(cartridge.clone(), Arc::new(Mutex::new(PPU::new(cartridge.clone()))));
-    let mut cpu = CPU::new(Rc::new(memory));
+    let mut cpu = CPU::from_rom(&rom);
     cpu.registers.y = 1;
     cpu.write(0x11, 0x11);
     cpu.write(0x12, 0x12);
@@ -186,11 +161,7 @@ fn indirect_x() {
 
     rom[2] = 0x61;
     rom[3] = 0x11;
-
-
-    let cartridge = Arc::new(Mutex::new(Cartridge::from_rom(rom.to_vec())));
-    let memory = Memory::new(cartridge.clone(), Arc::new(Mutex::new(PPU::new(cartridge.clone()))));
-    let mut cpu = CPU::new(Rc::new(memory));
+    let mut cpu = CPU::from_rom(&rom);
     cpu.registers.x = 1;
     cpu.write(0x12, 0x11);
     cpu.write(0x13, 0x12);
@@ -212,11 +183,7 @@ fn overflow_is_on_when_overflows() {
     rom[1] = 0x7f;
     rom[2] = 0x69;
     rom[3] = 1;
-
-
-    let cartridge = Arc::new(Mutex::new(Cartridge::from_rom(rom.to_vec())));
-    let memory = Memory::new(cartridge.clone(), Arc::new(Mutex::new(PPU::new(cartridge.clone()))));
-    let mut cpu = CPU::new(Rc::new(memory));
+    let mut cpu = CPU::from_rom(&rom);
     cpu.init();
     cpu.exec();
     cpu.exec();
@@ -234,11 +201,7 @@ fn carry_is_on_when_wraps() {
     rom[1] = 0xFF;
     rom[2] = 0x69;
     rom[3] = 0xFF;
-
-
-    let cartridge = Arc::new(Mutex::new(Cartridge::from_rom(rom.to_vec())));
-    let memory = Memory::new(cartridge.clone(), Arc::new(Mutex::new(PPU::new(cartridge.clone()))));
-    let mut cpu = CPU::new(Rc::new(memory));
+let mut cpu = CPU::from_rom(&rom);
     cpu.init();
     cpu.exec();
     cpu.exec();
@@ -256,11 +219,7 @@ fn adds_carry_to_sum() {
     rom[1] = 0xF0;
     rom[2] = 0x69;
     rom[3] = 2;
-
-
-    let cartridge = Arc::new(Mutex::new(Cartridge::from_rom(rom.to_vec())));
-    let memory = Memory::new(cartridge.clone(), Arc::new(Mutex::new(PPU::new(cartridge.clone()))));
-    let mut cpu = CPU::new(Rc::new(memory));
+let mut cpu = CPU::from_rom(&rom);
     cpu.registers.carry = true;
     cpu.init();
     cpu.exec();

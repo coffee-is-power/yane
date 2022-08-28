@@ -1,18 +1,10 @@
-use std::{rc::Rc, sync::{Arc, Mutex}};
-
-use crate::{CPU, cartridge::Cartridge, memory::Memory, ppu::PPU};
-#[test]
+use crate::CPU;#[test]
 fn clc() {
     let mut rom = [0u8; 0x7fff];
-
     rom[0x3FFC] = 0x00;
     rom[0x3FFD] = 0x80;
     rom[0] = 0x18;
-
-
-    let cartridge = Arc::new(Mutex::new(Cartridge::from_rom(rom.to_vec())));
-    let memory = Memory::new(cartridge.clone(), Arc::new(Mutex::new(PPU::new(cartridge.clone()))));
-    let mut cpu = CPU::new(Rc::new(memory));
+    let mut cpu = CPU::from_rom(&rom);
     cpu.init();
     cpu.registers.carry = true;
     cpu.exec();
@@ -27,9 +19,7 @@ fn sec() {
     rom[0] = 0x38;
 
 
-    let cartridge = Arc::new(Mutex::new(Cartridge::from_rom(rom.to_vec())));
-    let memory = Memory::new(cartridge.clone(), Arc::new(Mutex::new(PPU::new(cartridge.clone()))));
-    let mut cpu = CPU::new(Rc::new(memory));
+let mut cpu = CPU::from_rom(&rom);
     cpu.init();
     cpu.registers.carry = false;
     cpu.exec();
@@ -44,9 +34,7 @@ fn clv() {
     rom[0] = 0xB8;
 
 
-    let cartridge = Arc::new(Mutex::new(Cartridge::from_rom(rom.to_vec())));
-    let memory = Memory::new(cartridge.clone(), Arc::new(Mutex::new(PPU::new(cartridge.clone()))));
-    let mut cpu = CPU::new(Rc::new(memory));
+let mut cpu = CPU::from_rom(&rom);
     cpu.init();
     cpu.registers.overflow = true;
     cpu.exec();

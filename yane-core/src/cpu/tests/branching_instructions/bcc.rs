@@ -1,7 +1,4 @@
-use std::{rc::Rc, sync::{Arc, Mutex}};
-
-use crate::{CPU, cartridge::Cartridge, memory::Memory, ppu::PPU};
-
+use crate::CPU;
 #[test]
 fn bcc_jumps_when_carry_is_false() {
     let mut rom = [0u8; 0x7fff];
@@ -11,9 +8,7 @@ fn bcc_jumps_when_carry_is_false() {
     rom[1] = 4;
 
 
-    let cartridge = Arc::new(Mutex::new(Cartridge::from_rom(rom.to_vec())));
-    let memory = Memory::new(cartridge.clone(), Arc::new(Mutex::new(PPU::new(cartridge.clone()))));
-    let mut cpu = CPU::new(Rc::new(memory));
+    let mut cpu = CPU::from_rom(&rom);
     cpu.init();
     cpu.registers.carry = false;
     cpu.exec();
@@ -29,9 +24,7 @@ fn bcc_does_not_jump_when_carry_is_true() {
     rom[1] = 4;
 
 
-    let cartridge = Arc::new(Mutex::new(Cartridge::from_rom(rom.to_vec())));
-    let memory = Memory::new(cartridge.clone(), Arc::new(Mutex::new(PPU::new(cartridge.clone()))));
-    let mut cpu = CPU::new(Rc::new(memory));
+let mut cpu = CPU::from_rom(&rom);
     cpu.init();
     cpu.registers.carry = true;
     cpu.exec();

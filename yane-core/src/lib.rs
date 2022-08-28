@@ -8,3 +8,5 @@ pub use cpu::CPU;
 pub use ppu::PPU;
 pub use cartridge::Cartridge;
 pub use memory::Memory;
+pub mod nes;
+pub use nes::NES;

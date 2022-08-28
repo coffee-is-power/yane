@@ -8,10 +8,7 @@ mod stack;
 mod subroutines;
 mod transfer_instructions;
 
-use std::{rc::Rc, sync::{Arc, Mutex}};
-
-use crate::{CPU, cartridge::Cartridge, memory::Memory, ppu::PPU};
-
+use crate::CPU;
 #[test]
 fn init_cpu_sets_correct_pc() {
     let mut rom = [0u8; 0x7fff];
@@ -19,10 +16,7 @@ fn init_cpu_sets_correct_pc() {
     rom[0x3FFC] = 0x00;
     rom[0x3FFD] = 0x80;
 
-
-    let cartridge = Arc::new(Mutex::new(Cartridge::from_rom(rom.to_vec())));
-    let memory = Memory::new(cartridge.clone(), Arc::new(Mutex::new(PPU::new(cartridge.clone()))));
-    let mut cpu = CPU::new(Rc::new(memory));
+    let mut cpu = CPU::from_rom(&rom);
     cpu.init();
     assert_eq!(
         cpu.registers.program_counter, 0x8000,
@@ -31,22 +25,19 @@ fn init_cpu_sets_correct_pc() {
 }
 #[test]
 fn ram_write_test() {
-    let cartridge = Arc::new(Mutex::new(Cartridge::from_rom(vec![])));
-    let memory = Memory::new(cartridge.clone(), Arc::new(Mutex::new(PPU::new(cartridge.clone()))));
-    let mut cpu = CPU::new(Rc::new(memory));
+
+    let mut cpu = CPU::from_rom(&[]);
     cpu.write(4, 10);
     assert_eq!(
-        Rc::get_mut(&mut cpu.memory).unwrap().ram[4], 10,
+        cpu.memory.borrow_mut().ram[4], 10,
         "The ram must hold the values written to it"
     );
 }
 
 #[test]
 fn ram_read_test() {
-    let cartridge = Arc::new(Mutex::new(Cartridge::from_rom(vec![])));
-    let memory = Memory::new(cartridge.clone(), Arc::new(Mutex::new(PPU::new(cartridge.clone()))));
-    let mut cpu = CPU::new(Rc::new(memory));
-    Rc::get_mut(&mut cpu.memory).unwrap().ram[4] = 10;
+    let mut cpu = CPU::from_rom(&[]);
+    cpu.memory.borrow_mut().ram[4] = 10;
     assert_eq!(
         cpu.read(4),
         10,
@@ -59,8 +50,6 @@ fn read_u16_test() {
 
     rom[(0xFFFC - 0x8000) & 0x3fff] = 0x00;
     rom[(0xFFFD - 0x8000) & 0x3fff] = 0x80;
-    let cartridge = Arc::new(Mutex::new(Cartridge::from_rom(rom.to_vec())));
-    let memory = Memory::new(cartridge.clone(), Arc::new(Mutex::new(PPU::new(cartridge.clone()))));
-    let mut cpu = CPU::new(Rc::new(memory));
+    let mut cpu = CPU::from_rom(&rom);
     assert_eq!(cpu.read_u16(0xFFFC), 0x8000)
 }

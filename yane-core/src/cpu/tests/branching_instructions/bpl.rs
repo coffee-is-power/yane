@@ -1,7 +1,4 @@
-use std::{rc::Rc, sync::{Arc, Mutex}};
-
-use crate::{CPU, cartridge::Cartridge, memory::Memory, ppu::PPU};
-
+use crate::CPU;
 #[test]
 fn bpl_jumps_when_negative_is_false() {
     let mut rom = [0u8; 0x7fff];
@@ -11,9 +8,7 @@ fn bpl_jumps_when_negative_is_false() {
     rom[1] = 3;
 
 
-    let cartridge = Arc::new(Mutex::new(Cartridge::from_rom(rom.to_vec())));
-    let memory = Memory::new(cartridge.clone(), Arc::new(Mutex::new(PPU::new(cartridge.clone()))));
-    let mut cpu = CPU::new(Rc::new(memory));
+let mut cpu = CPU::from_rom(&rom);
     cpu.init();
     cpu.registers.negative = false;
     cpu.exec();
@@ -29,9 +24,7 @@ fn bpl_does_not_jump_when_negative_is_true() {
     rom[1] = 3;
 
 
-    let cartridge = Arc::new(Mutex::new(Cartridge::from_rom(rom.to_vec())));
-    let memory = Memory::new(cartridge.clone(), Arc::new(Mutex::new(PPU::new(cartridge.clone()))));
-    let mut cpu = CPU::new(Rc::new(memory));
+let mut cpu = CPU::from_rom(&rom);
     cpu.init();
     cpu.registers.negative = true;
     cpu.exec();
@@ -47,9 +40,7 @@ fn bpl_works_with_negative_relative_addresses() {
     rom[1] = -6i8 as u8;
 
 
-    let cartridge = Arc::new(Mutex::new(Cartridge::from_rom(rom.to_vec())));
-    let memory = Memory::new(cartridge.clone(), Arc::new(Mutex::new(PPU::new(cartridge.clone()))));
-    let mut cpu = CPU::new(Rc::new(memory));
+let mut cpu = CPU::from_rom(&rom);
     cpu.init();
     cpu.registers.negative = false;
     cpu.exec();

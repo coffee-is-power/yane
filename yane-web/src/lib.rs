@@ -26,21 +26,15 @@ pub fn start(){
         .unwrap()
         .dyn_into::<web_sys::CanvasRenderingContext2d>()
         .unwrap();
-    let cartridge = Arc::new(Mutex::new(get_cartridge()));
-    let ppu = Arc::new(Mutex::new(PPU::new(cartridge.clone())));
-    let memory = Memory::new(cartridge.clone(), ppu.clone());
-    let mut cpu = CPU::new(Rc::new(memory));
-    let mut clock_counter = 0;
-    cpu.init();
+    let mut nes = NES::new(get_cartridge());
     log("Everything's working, Everything's twerking.");
     let f = Rc::new(RefCell::new(None));
     let g = f.clone();
     *g.borrow_mut() = Some(Closure::new(move || {
-
-        clock_counter = clock(clock_counter, &mut cpu, ppu.clone());
+        nes.clock();
         context.set_fill_style(&"#FFFFFF".into());
         context.fill_rect(0.0, 0.0, 256.0, 240.0);
-        let ppu = ppu.lock().unwrap();
+        let ppu = nes.ppu();
         draw_chr_memory(&context, 0, 1, 0, 0, &ppu);
         draw_chr_memory(&context, 1, 1, 0, 128, &ppu);
         request_animation_frame(f.borrow().as_ref().unwrap());

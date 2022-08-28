@@ -1,7 +1,7 @@
 use crate::mapper::Mapper;
 use crate::mapper_0::Mapper0;
 use std::fs::File;
-use std::io::{Read, BufReader};
+use std::io::Read;
 
 pub struct Cartridge {
     prg_memory: Vec<u8>,

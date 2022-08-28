@@ -1,10 +1,9 @@
 pub mod registers;
 #[cfg(test)]
 mod tests;
-
-use crate::memory::Memory;
 use registers::Registers;
-use std::{rc::Rc, sync::{Arc, Mutex}};
+use std::{rc::Rc, cell::RefCell};
+use crate::Memory;
 
 #[derive(Debug)]
 pub enum AddressingMode {
@@ -23,11 +22,17 @@ pub enum AddressingMode {
 
 pub struct CPU {
     pub registers: Registers,
-    pub memory: Rc<Memory>,
+    pub memory: Rc<RefCell<Memory>>,
     pub remaining_cycles: u32,
 }
 impl CPU {
-    pub fn new(memory: Rc<Memory>) -> Self {
+    #[cfg(test)]
+    pub fn from_rom(rom: &[u8]) -> Self {
+        let cartridge = Rc::new(RefCell::new(crate::Cartridge::from_rom(rom.to_vec())));
+        let memory = Memory::new(cartridge.clone(), Rc::new(RefCell::new(crate::PPU::new(cartridge.clone()))));
+        CPU::new(Rc::new(RefCell::new(memory)))
+    }
+    pub fn new(memory: Rc<RefCell<Memory>>) -> Self {
         Self {
             registers: Registers::new(),
             memory,
@@ -119,13 +124,11 @@ impl CPU {
     pub fn write(&mut self, address: u16, data: u8) {
         println!("Write:\n  Address: {},\n  Data: {}", address, data);
 
-        Rc::get_mut(&mut self.memory)
-            .unwrap()
+        self.memory.borrow_mut()
             .cpu_write(address, data);
     }
     pub fn read(&mut self, address: u16) -> u8 {
-        let r = Rc::get_mut(&mut self.memory)
-        .unwrap().cpu_read(address).or_else(|| Some(0)).unwrap();
+        let r = self.memory.borrow_mut().cpu_read(address).or_else(|| Some(0)).unwrap();
         println!("Read Address {:#02x}: {:#02x}", address, r);
         r
     }
@@ -988,6 +991,9 @@ impl CPU {
         let new_pc = self.read_u16(0xFFFE);
         self.registers.program_counter = new_pc;
     }
+    // This is going to be used in the ppu which is incomplete for now
+    // So i'm gonna just suppress the warning
+    #[allow(unused)]
     fn nmi(&mut self) {
         self.push(((self.registers.program_counter & 0xFF00) >> 8) as u8);
         self.push((self.registers.program_counter) as u8);
@@ -1198,8 +1204,6 @@ impl CPU {
     fn bvc(&mut self) {
         if !self.registers.overflow {
             let value = self.read(self.registers.program_counter);
-            
-            let old_pc = self.registers.program_counter - 1;
             if value > 0x7F {
                 self.registers.program_counter -= (!value + 1) as u16;
             } else {
@@ -1212,7 +1216,6 @@ impl CPU {
         if self.registers.overflow {
             let value = self.read(self.registers.program_counter);
             
-            let old_pc = self.registers.program_counter - 1;
             if value > 0x7F {
                 self.registers.program_counter -= (!value + 1) as u16;
             } else {
@@ -1225,8 +1228,6 @@ impl CPU {
     fn beq(&mut self) {
         if self.registers.zero {
             let value = self.read(self.registers.program_counter);
-            
-            let old_pc = self.registers.program_counter - 1;
             if value > 0x7F {
                 self.registers.program_counter -= (!value + 1) as u16;
             } else {
@@ -1240,7 +1241,6 @@ impl CPU {
         if !self.registers.zero {
             let value = self.read(self.registers.program_counter);
 
-            let old_pc = self.registers.program_counter - 1;
             if value > 0x7F {
                 self.registers.program_counter -= (!value + 1) as u16;
             } else {
@@ -1253,7 +1253,6 @@ impl CPU {
         if self.registers.negative {
             let value = self.read(self.registers.program_counter);
 
-            let old_pc = self.registers.program_counter - 1;
             if value > 0x7F {
                 self.registers.program_counter -= (!value + 1) as u16;
             } else {

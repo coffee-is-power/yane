@@ -1,7 +1,4 @@
-use std::{rc::Rc, sync::{Arc, Mutex}};
-
-use crate::{CPU, cartridge::Cartridge, memory::Memory, ppu::PPU};
-
+use crate::CPU;
 #[test]
 fn jsr() {
     let mut rom = [0u8; 0x7fff];
@@ -13,9 +10,7 @@ fn jsr() {
     rom[2] = 0x80;
 
 
-    let cartridge = Arc::new(Mutex::new(Cartridge::from_rom(rom.to_vec())));
-    let memory = Memory::new(cartridge.clone(), Arc::new(Mutex::new(PPU::new(cartridge.clone()))));
-    let mut cpu = CPU::new(Rc::new(memory));
+    let mut cpu = CPU::from_rom(&rom);
     cpu.init();
     cpu.exec();
     assert_eq!(cpu.registers.stack_pointer, 0x22);
@@ -36,11 +31,7 @@ fn rts() {
     rom[1] = 0x50;
     rom[2] = 0x80;
     rom[0x50] = 0x60;
-
-
-    let cartridge = Arc::new(Mutex::new(Cartridge::from_rom(rom.to_vec())));
-    let memory = Memory::new(cartridge.clone(), Arc::new(Mutex::new(PPU::new(cartridge.clone()))));
-    let mut cpu = CPU::new(Rc::new(memory));
+    let mut cpu = CPU::from_rom(&rom);
     cpu.init();
     cpu.exec();
     cpu.exec();
